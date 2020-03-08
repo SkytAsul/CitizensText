@@ -1,0 +1,74 @@
+name: CitizensText
+author: SkytAsul
+version: 1.18
+description: Allows to make speak your NPCs from Citizens.
+depend: [Citizens]
+softdepend: [PlaceholderAPI]
+main: fr.skytasul.citizenstext.CitizensText
+api-version: 1.13
+website: https://www.spigotmc.org/resources/citizenstext.40107/
+commands:
+  text:
+    description: Main command for manage NPC messaging
+    permission: citizenstext.command
+
+permissions:
+  citizenstext.*:
+    description: Give access to all CitizensText commands
+    children:
+      citizenstext.command: true
+      citizenstext.add: true
+      citizenstext.remove: true
+      citizenstext.list: true
+      citizenstext.cmd: true
+      citizenstext.clear: true
+      citizenstext.sound: true
+      citizenstext.convert: true
+      citizenstext.name: true
+      citizenstext.repeat: true
+      citizenstext.random: true
+      citizenstext.delete: true
+      citizenstext.reload: true
+      citizenstext.save: true
+  citizenstext.command:
+    description: Give access to text command
+    default: op
+  citizenstext.add:
+    description: Can add a message
+    default: op
+  citizenstext.remove:
+    description: Can delete a message
+    default: op
+  citizenstext.cmd:
+    description: Can add/remove a command for a message
+    default: op
+  citizenstext.clear:
+    description: Can clear all messages
+    default: op
+  citizenstext.sound:
+    description: Can set sounds to messages
+    default: op
+  citizenstext.name:
+    description: Can set the custom name of the NPC
+    default: op
+  citizenstext.repeat:
+    description: Can toggle repeat mode
+    default: op
+  citizenstext.convert:
+    description: Can convert text from default text editor
+    default: op
+  citizenstext.random:
+    description: Can toggle random mode
+    default: op
+  citizenstext.list:
+    description: Can list all messages
+    default: op
+  citizenstext.delete:
+    description: Can delete text instance
+    default: op
+  citizenstext.reload:
+    description: Can reload the configuration
+    default: op
+  citizenstext.save:
+    description: Can save the configuration
+    default: op

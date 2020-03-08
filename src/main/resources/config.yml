@@ -1,0 +1,26 @@
+# Format of the text. Placeholders: 0 for NPC's name ; 1 for message ; 2 for message id ; 3 for messages amount
+npcTexts: "§6[{2}/{3}] §e§l{0} :§r§e {1}"
+
+# Text shown when hovering a clickable message
+clickableMessage : '§eClickable Message !'
+
+# Time (in seconds) before the next message will be automatically sent (-1 to disable)
+continueAfter: -1
+
+# Maximum distance where the message can be sent
+continueDistance: 10
+
+# Maximum time (in seconds) until the NPC will reset its conversation with the player
+keepTime: 0
+
+# Minimum time before the player can click on the NPC to see the next message
+clickMinTime: 0
+
+# Minimum time before the player can click on the NPC to replay the whole conversation
+playbackSeconds: 5
+
+# If enabled, the players will not be able to click on the NPCs to start the conversation. The conversation will automatically start when the player will be in the "continueDistance" radius from the NPC.
+disableClick: false
+
+# Change the action from right to left click
+leftClick: false
