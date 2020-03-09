@@ -228,7 +228,7 @@ public class TextInstance implements Listener{
 		}
 		int id;
 		if (players.containsKey(uuid.toString())) { // player has already started
-			if (resetTimes.containsKey(uuid) && resetTimes.get(uuid) <= System.currentTimeMillis()) {
+			if (!resetTimes.containsKey(uuid) || resetTimes.get(uuid) > System.currentTimeMillis()) {
 				id = players.get(uuid.toString());
 				if (id >= messages.size()) id = 0;
 			}else id = 0;
@@ -237,10 +237,10 @@ public class TextInstance implements Listener{
 			id = 0;
 		}
 		sendText(p, id);
-		resetTimes.put(uuid, System.currentTimeMillis() + CitizensText.getKeepTime() * 1000);
 		
 		id++;
 		if (messages.size() == id){ // last message
+			resetTimes.remove(uuid);
 			if (runs.containsKey(uuid)){ // cancel and remove launch task
 				runs.get(uuid).cancel();
 				runs.remove(uuid);
@@ -249,6 +249,7 @@ public class TextInstance implements Listener{
 			return;
 		}
 		// not last message
+		if (CitizensText.getKeepTime() != -1) resetTimes.put(uuid, System.currentTimeMillis() + CitizensText.getKeepTime() * 1000);
 		players.put(uuid.toString(), id); // add in list
 		if (CitizensText.getTimeToContinue() >= 0){ // TASK SYSTEM
 			if (runs.containsKey(uuid)){ // cancel and remove task in progress
@@ -310,12 +311,23 @@ public class TextInstance implements Listener{
 				}
 			}
 		}
-		//messages.forEach((x) -> tmp.put(messages.indexOf(x), x));
 		map.put("messages", tmp);
 		
 		if (!sounds.isEmpty()) map.put("sounds", sounds);
 		if (!commands.isEmpty()) map.put("commands", commands);
-		if (!players.isEmpty()) map.put("players", players);
+		if (!players.isEmpty()) {
+			if (!resetTimes.isEmpty()) {
+				long time = System.currentTimeMillis();
+				for (Iterator<Entry<UUID, Long>> iterator = resetTimes.entrySet().iterator(); iterator.hasNext();) {
+					Entry<UUID, Long> entry = iterator.next();
+					if (entry.getValue() <= time) {
+						iterator.remove();
+						players.remove(entry.getKey().toString());
+					}
+				}
+			}
+			map.put("players", players);
+		}
 		if (!times.isEmpty()) {
 			long time = System.currentTimeMillis();
 			for (Iterator<Entry<String, Long>> iterator = times.entrySet().iterator(); iterator.hasNext();) {

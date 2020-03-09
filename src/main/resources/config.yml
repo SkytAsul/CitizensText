@@ -11,12 +11,12 @@ continueAfter: -1
 continueDistance: 10
 
 # Maximum time (in seconds) until the NPC will reset its conversation with the player
-keepTime: 0
+keepTime: -1
 
-# Minimum time before the player can click on the NPC to see the next message
+# Minimum time (in seconds) before the player can click on the NPC to see the next message
 clickMinTime: 0
 
-# Minimum time before the player can click on the NPC to replay the whole conversation
+# Minimum time (in seconds) before the player can click on the NPC to replay the whole conversation
 playbackSeconds: 5
 
 # If enabled, the players will not be able to click on the NPCs to start the conversation. The conversation will automatically start when the player will be in the "continueDistance" radius from the NPC.
