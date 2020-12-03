@@ -1,6 +1,9 @@
 # Format of the text. Placeholders: 0 for NPC's name ; 1 for message ; 2 for message id ; 3 for messages amount
 npcTexts: "§6[{2}/{3}] §e§l{0} :§r§e {1}"
 
+# Format of the text. Placeholders: 0 for player's name ; 1 for message ; 2 for message id ; 3 for messages amount
+playerTexts: "§6[{2}/{3}] §e§l{0} :§r§e {1}"
+
 # Text shown when hovering a clickable message
 clickableMessage : '§eClickable Message !'
 

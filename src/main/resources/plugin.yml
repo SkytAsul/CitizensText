@@ -1,6 +1,6 @@
 name: CitizensText
 author: SkytAsul
-version: 1.18
+version: ${project.version}
 description: Allows to make speak your NPCs from Citizens.
 depend: [Citizens]
 softdepend: [PlaceholderAPI]
@@ -18,9 +18,12 @@ permissions:
     children:
       citizenstext.command: true
       citizenstext.add: true
+      citizenstext.edit: true
+      citizenstext.insert: true
       citizenstext.remove: true
       citizenstext.list: true
       citizenstext.cmd: true
+      citizenstext.player: true
       citizenstext.clear: true
       citizenstext.sound: true
       citizenstext.convert: true
@@ -36,8 +39,17 @@ permissions:
   citizenstext.add:
     description: Can add a message
     default: op
+  citizenstext.edit:
+    description: Can edit a message
+    default: op
+  citizenstext.insert:
+    description: Can insert a message
+    default: op
   citizenstext.remove:
     description: Can delete a message
+    default: op
+  citizenstext.player:
+    description: Can toggle player-mode
     default: op
   citizenstext.cmd:
     description: Can add/remove a command for a message

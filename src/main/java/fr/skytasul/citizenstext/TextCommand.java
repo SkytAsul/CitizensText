@@ -14,6 +14,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import fr.skytasul.citizenstext.TextInstance.Message;
 import net.citizensnpcs.Citizens;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
@@ -22,7 +23,7 @@ import net.citizensnpcs.trait.text.Text;
 @SuppressWarnings("serial")
 public class TextCommand implements CommandExecutor, TabCompleter {
 
-	private List<String> cmds = Arrays.asList("add", "insert", "remove", "cmd", "list", "clear", "sound", "name", "repeat", "convert", "random", "help", "reload", "save", "delete");
+	private List<String> cmds = Arrays.asList("add", "edit", "insert", "remove", "player", "cmd", "list", "clear", "sound", "name", "repeat", "convert", "random", "help", "reload", "save", "delete");
 	private Map<String, List<String>> subCmds = new HashMap<String, List<String>>() {{
 		put("cmd", Arrays.asList("add", "remove", "auto", "console"));
 		put("sound", Arrays.asList("add", "remove"));
@@ -85,9 +86,35 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			txt.addMessage(msg);
 			p.sendMessage(ChatColor.GREEN + "Succesfully added message \"" + msg + "\".");
 			break;
+		
+		case "edit":
+			if (!perm(sender, "edit")) return false;
+			if (args.length < 3) {
+				sender.sendMessage(ChatColor.RED + "You must specify an ID and a message.");
+				return false;
+			}
+			stb = new StringBuilder();
+			for (int i = 2; i < args.length; i++) {
+				stb.append(args[i] + " ");
+			}
+			msg = stb.toString();
+			msg = msg.substring(0, msg.length() - 1);
+			try {
+				int id = Integer.parseInt(args[1]);
+				if (id < 0) {
+					p.sendMessage(ChatColor.RED + "This is not a valid number.");
+					return false;
+				}
+				p.sendMessage(ChatColor.GREEN + "Succesfully edited message \"" + txt.editMessage(id, msg) + "\"§r§a at the position " + id + ".");
+			}catch (IllegalArgumentException ex) {
+				p.sendMessage(ChatColor.RED + "This is not a valid number.");
+			}catch (IndexOutOfBoundsException ex) {
+				p.sendMessage(ChatColor.RED + "The number you have entered (" + args[1] + ") is too big. It must be between 0 and " + txt.size() + ".");
+			}
+			break;
 
 		case "insert":
-			if (!perm(sender, "add")) return false;
+			if (!perm(sender, "insert")) return false;
 			if (args.length < 3){
 				sender.sendMessage(ChatColor.RED + "You must specify an ID and a message.");
 				return false;
@@ -117,7 +144,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				sender.sendMessage(ChatColor.RED + "You must specify an ID.");
 				return false;
 			}
-			int id = 0;
+			int id;
 			try {
 				id = Integer.parseInt(args[1]);
 			}catch (IllegalArgumentException ex){
@@ -131,6 +158,25 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			}
 			break;
 			
+		case "player":
+			if (!perm(sender, "player")) return false;
+			if (args.length == 1) {
+				sender.sendMessage(ChatColor.RED + "You must specify an ID.");
+				return false;
+			}
+			try {
+				id = Integer.parseInt(args[1]);
+			}catch (IllegalArgumentException ex) {
+				p.sendMessage(ChatColor.RED + "\"" + args[1] + "\" isn't a valid number.");
+				return false;
+			}
+			try {
+				p.sendMessage(ChatColor.GREEN + "Message at position " + id + " is now sent by the " + (txt.getMessage(id).togglePlayerMode() ? "player" : "NPC") + ".");
+			}catch (IndexOutOfBoundsException ex) {
+				p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+			}
+			break;
+		
 		case "cmd":
 			if (!perm(sender, "cmd")) return false;
 			if (args.length < 2){
@@ -278,19 +324,19 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				return false;
 			}
 			try {
-				Text trait = npc.getTrait(Text.class);
+				Text trait = npc.getTraitNullable(Text.class);
 				Field f = trait.getClass().getDeclaredField("text");
 				f.setAccessible(true);
 				List<String> ls = new ArrayList<>((List<String>) f.get(trait));
-				for (String s : txt.getMessages()){
-					if (ls.contains(s)) ls.remove(s);
+				for (Message s : txt.getMessages()){
+					if (ls.contains(s.getText())) ls.remove(s.getText());
 				}
 				for (String s : ls){
 					txt.addMessage(s);
 				}
 				p.sendMessage(ChatColor.GREEN.toString() + ls.size() + " messages added.");
 				npc.removeTrait(Text.class);
-			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			}catch (ReflectiveOperationException e) {
 				p.sendMessage("§cError while conversion. Please contact an administrator.");
 				e.printStackTrace();
 			}
@@ -319,16 +365,18 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 		case "help":
 			p.sendMessage(ChatColor.GREEN + "§m--§r §2§lCitizensText §r§2help §a§m--§r§a\n"
 					+ " /text add <message> : Add a message (to skip a line use {nl})\n"
+					+ " /text edit <id> <message> : Edit a previously created message\n"
 					+ " /text insert <id> <message> : Insert a message\n"
 					+ " /text remove <id> : Remove a message\n"
+					+ " /text player <id> : Make the message sent by the player\n"
 					+ " /text cmd <add|remove|auto> ... : Manage text commands\n"
 					+ " /text sound <add|remove> <id> ... : Manage text sounds\n"
 					+ " /text name <name> : Set the custom name of the NPC\n"
 					+ " /text repeat : Block the player from talking to the NPC again\n"
-					+ " /text convert : Add all messages from default NPC Text trait\n"
 					+ " /text random : Toggle random mode\n"
 					+ " /text list : List all messages/IDs\n"
 					+ " /text clear : Clear all messages\n"
+					+ " /text convert : Add all messages from default NPC Text trait\n"
 					+ " /text delete : Delete text's instance to free space\n"
 					+ "  §a§l -- -   x   - --§r§a\n"
 					+ " /text reload : Reload config and datas\n"

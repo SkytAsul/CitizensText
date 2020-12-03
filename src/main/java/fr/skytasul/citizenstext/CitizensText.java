@@ -26,7 +26,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class CitizensText extends JavaPlugin implements Listener{
 
 	private static CitizensText instance;
-	private static String npcFormat;
+	private static String npcFormat, playerFormat;
 	private static String clMsg = "§eClickable Message !";
 	private static int continueAfter;
 	private static int continueDistance;
@@ -115,6 +115,7 @@ public class CitizensText extends JavaPlugin implements Listener{
 	public void loadConfig(){
 		reloadConfig();
 		npcFormat = getConfig().getString("npcTexts");
+		playerFormat = getConfig().getString("playerTexts");
 		clMsg = getConfig().getString("clickableMessage");
 		continueAfter = getConfig().getInt("continueAfter");
 		continueDistance = getConfig().getInt("continueDistance");
@@ -139,6 +140,7 @@ public class CitizensText extends JavaPlugin implements Listener{
 			}
 		}
 		data.set("data", ls);
+		data.set("lastVersion", getDescription().getVersion());
 		try {
 			data.save(dataFile);
 			getLogger().info(ls.size() + " texts saved");
@@ -166,21 +168,17 @@ public class CitizensText extends JavaPlugin implements Listener{
 		return instance;
 	}
 	
-	public static void sendNPCMessage(Player p, String msg, String name, int id, int max){
-		p.spigot().sendMessage(TextComponent.fromLegacyText(formatNPC(msg, name, id, max)));
-	}
-	
-	public static void sendRawNPC(Player p, String msg, String name, String command, int id, int max){
-		BaseComponent[] clicks = TextComponent.fromLegacyText(formatNPC(msg, name, id, max));
+	public static void sendCommand(Player p, String text, String command) {
+		BaseComponent[] clicks = TextComponent.fromLegacyText(text);
 		for (BaseComponent click : clicks) {
 			click.setClickEvent(new ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/" + command));
 			click.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(clMsg).create()));
 		}
 		p.spigot().sendMessage(clicks);
 	}
-
-	public static String formatNPC(String msg, String name, int id, int max){
-		return format(format(format(format(npcFormat, 0, name), 1, msg), 2, "" + id), 3, "" + max).replace("{nl}", "\n");
+	
+	public static String formatMessage(boolean player, String msg, String name, int id, int max) {
+		return format(format(format(format(player ? playerFormat : npcFormat, 0, name), 1, msg), 2, "" + id), 3, "" + max).replace("{nl}", "\n");
 	}
 
 	public static String format(String msg, int i, String replace){

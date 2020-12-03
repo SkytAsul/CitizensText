@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.StringJoiner;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -37,9 +39,7 @@ public class TextInstance implements Listener{
 	private Map<UUID, Long> resetTimes = new HashMap<>();
 	private Map<UUID, BukkitRunnable> runs = new HashMap<>();
 	
-	private List<String> messages = new ArrayList<>();
-	private Map<Integer, String> commands = new HashMap<>();
-	private Map<Integer, String> sounds = new HashMap<>();
+	private List<Message> messages = new ArrayList<>();
 	private boolean random = false;
 	private boolean repeat = true;
 	private boolean autoDispatch = true;
@@ -59,33 +59,31 @@ public class TextInstance implements Listener{
 	}
 	
 	public void addMessage(String msg){
-		messages.add(msg);
+		messages.add(new Message(msg));
+	}
+	
+	public String editMessage(int id, String msg) {
+		return messages.get(id).setText(msg);
 	}
 	
 	public void insertMessage(String msg, int id){
-		messages.add(id, msg);
+		messages.add(id, new Message(msg));
 	}
 	
 	public String setCommand(int id, String command){
-		String tmp = "";
-		if (commands.containsKey(id)) tmp = commands.remove(id);
-		commands.put(id, command);
-		return tmp;
+		return messages.get(id).setCommand(command);
 	}
 	
 	public String removeCommand(int id){
-		return commands.remove(id);
+		return messages.get(id).setCommand(null);
 	}
 	
-	public String setSound(int id, String command){
-		String tmp = "";
-		if (sounds.containsKey(id)) tmp = sounds.remove(id);
-		sounds.put(id, command);
-		return tmp;
+	public String setSound(int id, String sound) {
+		return messages.get(id).setSound(sound);
 	}
 	
 	public String removeSound(int id){
-		return sounds.remove(id);
+		return messages.get(id).setSound(null);
 	}
 	
 	public boolean toggleRandom(){
@@ -132,22 +130,23 @@ public class TextInstance implements Listener{
 		return i;
 	}
 
-	public String getMessage(int id){
+	public Message getMessage(int id) {
 		return messages.get(id);
 	}
 	
-	public String removeMessage(int id){
+	public Message removeMessage(int id) {
 		return messages.remove(id);
 	}
 	
-	public List<String> getMessages(){
+	public List<Message> getMessages() {
 		return new ArrayList<>(messages);
 	}
 	
 	public String listMessages(){
-		StringBuilder stb = new StringBuilder();
-		for (String msg : messages){
-			stb.append(ChatColor.AQUA + "" + messages.indexOf(msg) + " : " + ChatColor.GREEN + msg + "\n");
+		StringJoiner stb = new StringJoiner("\n");
+		for (int i = 0; i < messages.size(); i++) {
+			Message msg = messages.get(i);
+			stb.add(ChatColor.AQUA + "" + id + " : " + ChatColor.GREEN + msg);
 		}
 		return stb.toString();
 	}
@@ -158,8 +157,6 @@ public class TextInstance implements Listener{
 	
 	public boolean isEmpty(){
 		if (!messages.isEmpty()) return false;
-		if (!commands.isEmpty()) return false;
-		if (!sounds.isEmpty()) return false;
 		if (autoDispatch) return false;
 		if (random) return false;
 		if (console) return false;
@@ -274,24 +271,7 @@ public class TextInstance implements Listener{
 	}
 	
 	private void sendText(Player p, int id){
-		String msg = messages.get(id); 
-		if (CitizensText.papi) msg = PlaceholderDepend.format(msg, p);
-		msg = msg.replace("{PLAYER}", p.getName());
-		String sound = sounds.get(id);
-		if (commands.containsKey(id)){ // clickable message
-			String cmd = commands.get(id);
-			cmd = cmd.replace("{PLAYER}", p.getName());
-			if (!autoDispatch && !console){
-				CitizensText.sendRawNPC(p, msg, npc.getName(), cmd, id + 1, messages.size());
-				if (sound != null) p.playSound(p.getLocation(), sound, 1f, 1f);
-				return;
-			}
-			if (!console){
-				p.performCommand(cmd);
-			}else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-		}// normal message
-		if (sound != null) p.playSound(p.getLocation(), sound, 1f, 1f);
-		CitizensText.sendNPCMessage(p, msg, getNPCName(), id + 1, messages.size());
+		messages.get(id).send(p, id);
 	}
 	
 	public Map<String, Object> serialize(){
@@ -301,20 +281,12 @@ public class TextInstance implements Listener{
 		
 		map.put("npc", npc == null ? id : npc.getId());
 		
-		Map<Integer, String> tmp = new HashMap<>();
+		Map<Integer, Object> tmp = new HashMap<>();
 		for (int i = 0; i < messages.size(); i++){
-			String msg = messages.get(i);
-			index: for (int j = i; j < messages.size(); j++){
-				if (msg.equals(messages.get(j))){
-					tmp.put(j, msg);
-					break index;
-				}
-			}
+			tmp.put(i, messages.get(i).serialize());
 		}
 		map.put("messages", tmp);
 		
-		if (!sounds.isEmpty()) map.put("sounds", sounds);
-		if (!commands.isEmpty()) map.put("commands", commands);
 		if (!players.isEmpty()) {
 			if (!resetTimes.isEmpty()) {
 				long time = System.currentTimeMillis();
@@ -346,27 +318,21 @@ public class TextInstance implements Listener{
 	}
 	
 	public static void load(Map<String, Object> map){
-		int id = (int) map.get("npc");
-		NPC npc = CitizensAPI.getNPCRegistry().getById(id);
+		int npcID = (int) map.get("npc");
+		NPC npc = CitizensAPI.getNPCRegistry().getById(npcID);
 		if (npc == null) CitizensText.getInstance().getLogger().info("NPC with the id " + map.get("npc") + " doesn't exist. Consider removing this text instance.");
 		
-		TextInstance ti = npc == null ? new TextInstance(id) : new TextInstance(npc);
+		TextInstance ti = npc == null ? new TextInstance(npcID) : new TextInstance(npc);
 		
-		List<Entry<Integer, String>> strings = new ArrayList<>();
-		for (Entry<Integer, String> en : ((Map<Integer, String>) map.get("messages")).entrySet()){
-			strings.add(en);
-		}
-		strings.sort((x, y) -> {
-			if (x.getKey() < y.getKey()) return -1;
-			if (x.getKey() > y.getKey()) return 1;
-			return 0;
-		});
-		strings.forEach((x) -> ti.messages.add(x.getValue()));
+		ti.messages = ((Map<Integer, Object>) map.get("messages")).entrySet().stream().sorted((x, y) -> Integer.compare(x.getKey(), y.getKey())).map(x -> {
+			if (x.getValue() instanceof String) return ti.new Message((String) x.getValue());
+			return ti.new Message((Map<String, Object>) x.getValue());
+		}).collect(Collectors.toList());
 
-		if (map.containsKey("commands")) ti.commands = (Map<Integer, String>) map.get("commands");
+		if (map.containsKey("commands")) ((Map<Integer, String>) map.get("commands")).forEach((id, command) -> ti.messages.get(id).command = command); // TODO remove (changed in 1.19)
+		if (map.containsKey("sounds")) ((Map<Integer, String>) map.get("sounds")).forEach((id, sound) -> ti.messages.get(id).sound = sound); // TODO remove (changed in 1.19)
 		if (map.containsKey("players")) ti.players = (Map<String, Integer>) map.get("players");
 		if (map.containsKey("times")) ti.times = (Map<String, Long>) map.get("times");
-		if (map.containsKey("sounds")) ti.sounds = (Map<Integer, String>) map.get("sounds");
 		if (map.containsKey("random")) ti.random = (boolean) map.get("random");
 		if (map.containsKey("repeat")) ti.repeat = (boolean) map.get("repeat");
 		if (map.containsKey("autoDispatch")) ti.autoDispatch = (boolean) map.get("autoDispatch");
@@ -375,7 +341,81 @@ public class TextInstance implements Listener{
 
 		if (npc != null){
 			npcs.put(npc, ti);
-		}else dead.put(id, ti);
+		}else dead.put(npcID, ti);
+	}
+	
+	class Message {
+		private String text;
+		private boolean player = false;
+		private String command;
+		private String sound;
+		
+		public Message(String text) {
+			this.text = text;
+		}
+		
+		public Message(Map<String, Object> serializedDatas) {
+			text = (String) serializedDatas.get("text");
+			if (serializedDatas.containsKey("player")) player = (boolean) serializedDatas.get("player");
+			if (serializedDatas.containsKey("command")) command = (String) serializedDatas.get("command");
+			if (serializedDatas.containsKey("sound")) sound = (String) serializedDatas.get("sound");
+		}
+		
+		public String getText() {
+			return text;
+		}
+		
+		public String setText(String text) {
+			String tmp = this.text;
+			this.text = text;
+			return tmp;
+		}
+		
+		public String setCommand(String command) {
+			String tmp = this.command;
+			this.command = command;
+			return tmp;
+		}
+		
+		public String setSound(String sound) {
+			String tmp = this.sound;
+			this.sound = sound;
+			return tmp;
+		}
+		
+		public boolean togglePlayerMode() {
+			return !(player = !player);
+		}
+		
+		public void send(Player p, int id) {
+			String msg = text;
+			if (CitizensText.papi) msg = PlaceholderDepend.format(msg, p);
+			msg = msg.replace("{PLAYER}", p.getName());
+			msg = CitizensText.formatMessage(player, msg, player ? p.getName() : getNPCName(), id + 1, messages.size());
+			if (command != null) {
+				String cmd = command.replace("{PLAYER}", p.getName());
+				if (!autoDispatch && !console) {
+					CitizensText.sendCommand(p, msg, cmd); // clickable msg
+					if (sound != null) p.playSound(p.getLocation(), sound, 1f, 1f);
+					return;
+				}
+				if (!console) {
+					p.performCommand(cmd);
+				}else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+			}// normal message
+			if (sound != null) p.playSound(p.getLocation(), sound, 1f, 1f);
+			p.sendMessage(msg);
+		}
+		
+		public Object serialize() {
+			if (!player && (command == null) && (sound == null)) return text;
+			Map<String, Object> map = new HashMap<>();
+			map.put("text", text);
+			if (player) map.put("player", true);
+			if (command != null) map.put("command", command);
+			if (sound != null) map.put("sound", sound);
+			return map;
+		}
 	}
 
 }
