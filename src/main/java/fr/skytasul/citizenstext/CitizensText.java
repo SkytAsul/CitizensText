@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -57,7 +58,9 @@ public class CitizensText extends JavaPlugin implements Listener{
 		papi = getServer().getPluginManager().isPluginEnabled("PlaceholderAPI");
 		if (papi) getLogger().info("PlaceholderAPI hooked !");
 		loadDatas();
-
+		
+		Metrics metrics = new Metrics(this, 9557);
+		metrics.addCustomChart(new Metrics.SingleLineChart("texts", () -> TextInstance.npcs.size()));
 	}
 	
 	public void onDisable(){
