@@ -146,7 +146,7 @@ public class TextInstance implements Listener{
 		StringJoiner stb = new StringJoiner("\n");
 		for (int i = 0; i < messages.size(); i++) {
 			Message msg = messages.get(i);
-			stb.add(ChatColor.AQUA + "" + id + " : " + ChatColor.GREEN + msg.text);
+			stb.add(ChatColor.AQUA + "" + i + " : " + ChatColor.GREEN + msg.text);
 		}
 		return stb.toString();
 	}
