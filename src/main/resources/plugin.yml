@@ -23,6 +23,7 @@ permissions:
       citizenstext.remove: true
       citizenstext.list: true
       citizenstext.cmd: true
+      citizenstext.delay: true
       citizenstext.player: true
       citizenstext.clear: true
       citizenstext.sound: true
@@ -47,6 +48,9 @@ permissions:
     default: op
   citizenstext.remove:
     description: Can delete a message
+    default: op
+  citizenstext.delay:
+    description: Can set the delay of a message
     default: op
   citizenstext.player:
     description: Can toggle player-mode

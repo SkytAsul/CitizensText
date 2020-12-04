@@ -23,7 +23,7 @@ import net.citizensnpcs.trait.text.Text;
 @SuppressWarnings("serial")
 public class TextCommand implements CommandExecutor, TabCompleter {
 
-	private List<String> cmds = Arrays.asList("add", "edit", "insert", "remove", "player", "cmd", "list", "clear", "sound", "name", "repeat", "convert", "random", "help", "reload", "save", "delete");
+	private List<String> cmds = Arrays.asList("add", "edit", "insert", "remove", "player", "cmd", "list", "clear", "sound", "delay", "name", "repeat", "convert", "random", "help", "reload", "save", "delete");
 	private Map<String, List<String>> subCmds = new HashMap<String, List<String>>() {{
 		put("cmd", Arrays.asList("add", "remove", "auto", "console"));
 		put("sound", Arrays.asList("add", "remove"));
@@ -174,6 +174,27 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				p.sendMessage(ChatColor.GREEN + "Message at position " + id + " is now sent by the " + (txt.getMessage(id).togglePlayerMode() ? "player" : "NPC") + ".");
 			}catch (IndexOutOfBoundsException ex) {
 				p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+			}
+			break;
+		
+		case "delay":
+			if (!perm(sender, "delay")) return false;
+			if (args.length == 1) {
+				sender.sendMessage(ChatColor.RED + "You must specify an ID.");
+				return false;
+			}
+			try {
+				id = Integer.parseInt(args[1]);
+				int delay = args.length == 2 ? -1 : Integer.parseInt(args[2]);
+				try {
+					txt.getMessage(id).setDelay(delay);
+					p.sendMessage(ChatColor.GREEN + "Message at position " + id + " now has " + (delay < 0 ? "default delay" : delay + " ticks delay") + ".");
+				}catch (IndexOutOfBoundsException ex) {
+					p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+				}
+			}catch (IllegalArgumentException ex) {
+				p.sendMessage(ChatColor.RED + "\"" + args[1] + "\" isn't a valid number.");
+				return false;
 			}
 			break;
 		
@@ -368,6 +389,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 					+ " /text edit <id> <message> : Edit a previously created message\n"
 					+ " /text insert <id> <message> : Insert a message\n"
 					+ " /text remove <id> : Remove a message\n"
+					+ " /text delay <id> [delay] : Set the delay of a message\n"
 					+ " /text player <id> : Make the message sent by the player\n"
 					+ " /text cmd <add|remove|auto> ... : Manage text commands\n"
 					+ " /text sound <add|remove> <id> ... : Manage text sounds\n"

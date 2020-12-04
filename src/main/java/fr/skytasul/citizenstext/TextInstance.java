@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.StringJoiner;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -146,7 +146,7 @@ public class TextInstance implements Listener{
 		StringJoiner stb = new StringJoiner("\n");
 		for (int i = 0; i < messages.size(); i++) {
 			Message msg = messages.get(i);
-			stb.add(ChatColor.AQUA + "" + id + " : " + ChatColor.GREEN + msg);
+			stb.add(ChatColor.AQUA + "" + id + " : " + ChatColor.GREEN + msg.text);
 		}
 		return stb.toString();
 	}
@@ -220,7 +220,8 @@ public class TextInstance implements Listener{
 		if (CitizensText.getClickMinimumTime() > 0) times.put(uuid.toString(), System.currentTimeMillis() + CitizensText.getClickMinimumTime() * 1000);
 		
 		if (random){
-			sendText(p, new Random().nextInt(messages.size()));
+			int id = ThreadLocalRandom.current().nextInt(messages.size());
+			messages.get(id).send(p, id);
 			return;
 		}
 		int id;
@@ -233,7 +234,8 @@ public class TextInstance implements Listener{
 		}else { // never started
 			id = 0;
 		}
-		sendText(p, id);
+		Message message = messages.get(id);
+		message.send(p, id);
 		
 		id++;
 		if (messages.size() == id){ // last message
@@ -248,7 +250,7 @@ public class TextInstance implements Listener{
 		// not last message
 		if (CitizensText.getKeepTime() != -1) resetTimes.put(uuid, System.currentTimeMillis() + CitizensText.getKeepTime() * 1000);
 		players.put(uuid.toString(), id); // add in list
-		if (CitizensText.getTimeToContinue() >= 0){ // TASK SYSTEM
+		if (message.getDelay() >= 0) { // TASK SYSTEM
 			if (runs.containsKey(uuid)){ // cancel and remove task in progress
 				runs.get(uuid).cancel();
 				runs.remove(uuid);
@@ -266,12 +268,8 @@ public class TextInstance implements Listener{
 					send(p);
 				}
 			});
-			runs.get(uuid).runTaskLater(CitizensText.getInstance(), CitizensText.getTimeToContinue() * 20);
+			runs.get(uuid).runTaskLater(CitizensText.getInstance(), message.getDelay());
 		}
-	}
-	
-	private void sendText(Player p, int id){
-		messages.get(id).send(p, id);
 	}
 	
 	public Map<String, Object> serialize(){
@@ -329,8 +327,12 @@ public class TextInstance implements Listener{
 			return ti.new Message((Map<String, Object>) x.getValue());
 		}).collect(Collectors.toList());
 
-		if (map.containsKey("commands")) ((Map<Integer, String>) map.get("commands")).forEach((id, command) -> ti.messages.get(id).command = command); // TODO remove (changed in 1.19)
-		if (map.containsKey("sounds")) ((Map<Integer, String>) map.get("sounds")).forEach((id, sound) -> ti.messages.get(id).sound = sound); // TODO remove (changed in 1.19)
+		if (map.containsKey("commands")) ((Map<Integer, String>) map.get("commands")).forEach((id, command) -> {
+			if (ti.messages.size() < id) ti.messages.get(id).command = command;
+		}); // TODO remove (changed in 1.19)
+		if (map.containsKey("sounds")) ((Map<Integer, String>) map.get("sounds")).forEach((id, sound) -> {
+			if (ti.messages.size() < id) ti.messages.get(id).sound = sound;
+		}); // TODO remove (changed in 1.19)
 		if (map.containsKey("players")) ti.players = (Map<String, Integer>) map.get("players");
 		if (map.containsKey("times")) ti.times = (Map<String, Long>) map.get("times");
 		if (map.containsKey("random")) ti.random = (boolean) map.get("random");
@@ -349,6 +351,7 @@ public class TextInstance implements Listener{
 		private boolean player = false;
 		private String command;
 		private String sound;
+		private int delay = -1;
 		
 		public Message(String text) {
 			this.text = text;
@@ -359,6 +362,7 @@ public class TextInstance implements Listener{
 			if (serializedDatas.containsKey("player")) player = (boolean) serializedDatas.get("player");
 			if (serializedDatas.containsKey("command")) command = (String) serializedDatas.get("command");
 			if (serializedDatas.containsKey("sound")) sound = (String) serializedDatas.get("sound");
+			if (serializedDatas.containsKey("delay")) delay = (int) serializedDatas.get("delay");
 		}
 		
 		public String getText() {
@@ -385,6 +389,14 @@ public class TextInstance implements Listener{
 		
 		public boolean togglePlayerMode() {
 			return !(player = !player);
+		}
+		
+		public void setDelay(int delay) {
+			this.delay = delay;
+		}
+		
+		public int getDelay() {
+			return delay < 0 ? CitizensText.getTimeToContinue() * 20 : delay;
 		}
 		
 		public void send(Player p, int id) {
@@ -414,6 +426,7 @@ public class TextInstance implements Listener{
 			if (player) map.put("player", true);
 			if (command != null) map.put("command", command);
 			if (sound != null) map.put("sound", sound);
+			if (delay != -1) map.put("delay", delay);
 			return map;
 		}
 	}
