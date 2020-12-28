@@ -22,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import fr.skytasul.citizenstext.event.TextSendEvent;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.event.NPCClickEvent;
 import net.citizensnpcs.api.event.NPCLeftClickEvent;
@@ -221,7 +222,9 @@ public class TextInstance implements Listener{
 		
 		if (random){
 			int id = ThreadLocalRandom.current().nextInt(messages.size());
-			messages.get(id).send(p, id);
+			TextSendEvent event = new TextSendEvent(p, this, messages.get(id));
+			Bukkit.getPluginManager().callEvent(event);
+			if (!event.isCancelled()) event.getMessage().send(p, id);
 			return;
 		}
 		int id;
@@ -235,6 +238,10 @@ public class TextInstance implements Listener{
 			id = 0;
 		}
 		Message message = messages.get(id);
+		TextSendEvent event = new TextSendEvent(p, this, message);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled()) return;
+		message = event.getMessage();
 		message.send(p, id);
 		
 		id++;
@@ -346,7 +353,7 @@ public class TextInstance implements Listener{
 		}else dead.put(npcID, ti);
 	}
 	
-	class Message {
+	public class Message {
 		private String text;
 		private boolean player = false;
 		private String command;

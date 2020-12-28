@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -226,7 +227,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				command = command.substring(0, command.length() - 1);
 				try{
 					String lcmd = txt.setCommand(id, command);
-					p.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id) + "\"§r§a." + ((!lcmd.isEmpty()) ? " Old command : \"" + lcmd: ""));
+					p.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id) + "\"§r§a." + ((!StringUtils.isEmpty(lcmd)) ? " Old command : \"" + lcmd : ""));
 				}catch (IndexOutOfBoundsException ex){
 					p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
 				}
