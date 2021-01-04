@@ -13,7 +13,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 
 import fr.skytasul.citizenstext.TextInstance.Message;
 import net.citizensnpcs.Citizens;
@@ -32,17 +31,12 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!(sender instanceof Player)){
-			sender.sendMessage(ChatColor.RED + "You must be a player to do this command.");
-			return false;
-		}
 		for (int i = 0; i < args.length; i++){
 			args[i] = args[i].replaceAll("&", "§");
 		}
 		
-		Player p = (Player) sender;
 		if (args.length == 0){
-			p.sendMessage(ChatColor.RED + "Unknown command. Type /text help to get some help for this command.");
+			sender.sendMessage(ChatColor.RED + "Unknown command. Type /text help to get some help for this command.");
 			return false;
 		}
 		
@@ -50,19 +44,19 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			if (!perm(sender, "reload")) return false;
 			CitizensText.getInstance().onDisable();
 			CitizensText.getInstance().loadConfig();
-			p.sendMessage("§aConfig reloaded !");
+			sender.sendMessage("§aConfig reloaded !");
 			CitizensText.getInstance().loadDatas();
-			p.sendMessage("§aDatas reloading...");
+			sender.sendMessage("§aDatas reloading...");
 			return false;
 		}else if (args[0].equals("save")){
 			if (!perm(sender, "save")) return false;
-			p.sendMessage("§aConfig saved ! " + CitizensText.getInstance().saveDatas() + " texts saveds.");
+			sender.sendMessage("§aConfig saved ! " + CitizensText.getInstance().saveDatas() + " texts saved.");
 			return false;
 		}
 		
-		NPC npc = ((Citizens) CitizensAPI.getPlugin()).getDefaultNPCSelector().getSelected(p);
+		NPC npc = ((Citizens) CitizensAPI.getPlugin()).getDefaultNPCSelector().getSelected(sender);
 		if (npc == null){
-			p.sendMessage(ChatColor.RED + "You must have a NPC selected to do this command.");
+			sender.sendMessage(ChatColor.RED + "You must have a NPC selected to do this command.");
 			return false;
 		}
 		if (!TextInstance.npcs.containsKey(npc)){
@@ -85,7 +79,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			String msg = stb.toString();
 			msg = msg.substring(0, msg.length() - 1);
 			txt.addMessage(msg);
-			p.sendMessage(ChatColor.GREEN + "Succesfully added message \"" + msg + "\".");
+			sender.sendMessage(ChatColor.GREEN + "Succesfully added message \"" + msg + "\".");
 			break;
 		
 		case "edit":
@@ -103,14 +97,14 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			try {
 				int id = Integer.parseInt(args[1]);
 				if (id < 0) {
-					p.sendMessage(ChatColor.RED + "This is not a valid number.");
+					sender.sendMessage(ChatColor.RED + "This is not a valid number.");
 					return false;
 				}
-				p.sendMessage(ChatColor.GREEN + "Succesfully edited message \"" + txt.editMessage(id, msg) + "\"§r§a at the position " + id + ".");
+				sender.sendMessage(ChatColor.GREEN + "Succesfully edited message \"" + txt.editMessage(id, msg) + "\"§r§a at the position " + id + ".");
 			}catch (IllegalArgumentException ex) {
-				p.sendMessage(ChatColor.RED + "This is not a valid number.");
+				sender.sendMessage(ChatColor.RED + "This is not a valid number.");
 			}catch (IndexOutOfBoundsException ex) {
-				p.sendMessage(ChatColor.RED + "The number you have entered (" + args[1] + ") is too big. It must be between 0 and " + txt.size() + ".");
+				sender.sendMessage(ChatColor.RED + "The number you have entered (" + args[1] + ") is too big. It must be between 0 and " + txt.size() + ".");
 			}
 			break;
 
@@ -129,13 +123,13 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			try{
 				int id = Integer.parseInt(args[1]);
 				if (id < 0){
-					p.sendMessage(ChatColor.RED + "This is not a valid number.");
+					sender.sendMessage(ChatColor.RED + "This is not a valid number.");
 					return false;
 				}
 				txt.insertMessage(msg, id);
-				p.sendMessage(ChatColor.GREEN + "Succesfully inserted message \"" + msg + "\"§r§a at the position " + id + ".");
+				sender.sendMessage(ChatColor.GREEN + "Succesfully inserted message \"" + msg + "\"§r§a at the position " + id + ".");
 			}catch (IllegalArgumentException ex){
-				p.sendMessage(ChatColor.RED + "This is not a valid number.");
+				sender.sendMessage(ChatColor.RED + "This is not a valid number.");
 			}
 			break;
 			
@@ -149,13 +143,13 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			try {
 				id = Integer.parseInt(args[1]);
 			}catch (IllegalArgumentException ex){
-				p.sendMessage(ChatColor.RED + "\"" + args[1] + "\" isn't a valid number.");
+				sender.sendMessage(ChatColor.RED + "\"" + args[1] + "\" isn't a valid number.");
 				return false;
 			}
 			try{
-				p.sendMessage(ChatColor.GREEN + "Succesfully removed message \"" + txt.removeMessage(id) + "\".");
+				sender.sendMessage(ChatColor.GREEN + "Succesfully removed message \"" + txt.removeMessage(id) + "\".");
 			}catch (IndexOutOfBoundsException ex){
-				p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+				sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
 			}
 			break;
 			
@@ -168,13 +162,13 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			try {
 				id = Integer.parseInt(args[1]);
 			}catch (IllegalArgumentException ex) {
-				p.sendMessage(ChatColor.RED + "\"" + args[1] + "\" isn't a valid number.");
+				sender.sendMessage(ChatColor.RED + "\"" + args[1] + "\" isn't a valid number.");
 				return false;
 			}
 			try {
-				p.sendMessage(ChatColor.GREEN + "Message at position " + id + " is now sent by the " + (txt.getMessage(id).togglePlayerMode() ? "player" : "NPC") + ".");
+				sender.sendMessage(ChatColor.GREEN + "Message at position " + id + " is now sent by the " + (txt.getMessage(id).togglePlayerMode() ? "player" : "NPC") + ".");
 			}catch (IndexOutOfBoundsException ex) {
-				p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+				sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
 			}
 			break;
 		
@@ -189,12 +183,12 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				int delay = args.length == 2 ? -1 : Integer.parseInt(args[2]);
 				try {
 					txt.getMessage(id).setDelay(delay);
-					p.sendMessage(ChatColor.GREEN + "Message at position " + id + " now has " + (delay < 0 ? "default delay" : delay + " ticks delay") + ".");
+					sender.sendMessage(ChatColor.GREEN + "Message at position " + id + " now has " + (delay < 0 ? "default delay" : delay + " ticks delay") + ".");
 				}catch (IndexOutOfBoundsException ex) {
-					p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+					sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
 				}
 			}catch (IllegalArgumentException ex) {
-				p.sendMessage(ChatColor.RED + "\"" + args[1] + "\" isn't a valid number.");
+				sender.sendMessage(ChatColor.RED + "\"" + args[1] + "\" isn't a valid number.");
 				return false;
 			}
 			break;
@@ -216,7 +210,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				try {
 					id = Integer.parseInt(args[2]);
 				}catch (IllegalArgumentException ex){
-					p.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
+					sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
 					return false;
 				}
 				stb = new StringBuilder();
@@ -227,9 +221,9 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				command = command.substring(0, command.length() - 1);
 				try{
 					String lcmd = txt.setCommand(id, command);
-					p.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id) + "\"§r§a." + ((!StringUtils.isEmpty(lcmd)) ? " Old command : \"" + lcmd : ""));
+					sender.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id) + "\"§r§a." + ((!StringUtils.isEmpty(lcmd)) ? " Old command : \"" + lcmd : ""));
 				}catch (IndexOutOfBoundsException ex){
-					p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+					sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
 				}
 				break;
 				
@@ -242,22 +236,22 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				try {
 					id = Integer.parseInt(args[2]);
 				}catch (IllegalArgumentException ex){
-					p.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
+					sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
 					return false;
 				}
-				p.sendMessage(ChatColor.GREEN + "Succesfully removed command \"" + txt.removeCommand(id) + "\".");
+				sender.sendMessage(ChatColor.GREEN + "Succesfully removed command \"" + txt.removeCommand(id) + "\".");
 				break;
 				
 			case "auto":
-				p.sendMessage("§aAuto-dispatchment of commands is now §o" + (txt.toggleAutodispatch() ? "enabled" : "disabled. Please note that clickable messages are not compatible with console dispatchment."));
+				sender.sendMessage("§aAuto-dispatchment of commands is now §o" + (txt.toggleAutodispatch() ? "enabled" : "disabled. Please note that clickable messages are not compatible with console dispatchment."));
 				break;
 				
 			case "console":
-				p.sendMessage("§aDispatchment by console of commands is now §o" + (txt.toggleConsole() ? "enabled. Please note that this feature is not compatible with clickable messages." : "disabled"));
+				sender.sendMessage("§aDispatchment by console of commands is now §o" + (txt.toggleConsole() ? "enabled. Please note that this feature is not compatible with clickable messages." : "disabled"));
 				break;
 				
 			default:
-				p.sendMessage(ChatColor.RED + "Unknown command. /text cmd <add|remove|auto|console>");
+				sender.sendMessage(ChatColor.RED + "Unknown command. /text cmd <add|remove|auto|console>");
 				break;
 				
 				
@@ -267,12 +261,12 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 		case "list":
 			if (!perm(sender, "list")) return false;
 			String list = ChatColor.GREEN + "List of messages for §6" + npc.getName() + " §a:\n§r" + txt.listMessages();
-			p.sendMessage(list);
+			sender.sendMessage(list);
 			break;
 			
 		case "clear":
 			if (!perm(sender, "clear")) return false;
-			p.sendMessage(ChatColor.GREEN.toString() + txt.clear() + " messages removed.");
+			sender.sendMessage(ChatColor.GREEN.toString() + txt.clear() + " messages removed.");
 			break;
 			
 		case "sound":
@@ -292,14 +286,14 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				try {
 					id = Integer.parseInt(args[2]);
 				}catch (IllegalArgumentException ex){
-					p.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
+					sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
 					return false;
 				}
 				try{
 					String lsound = txt.setSound(id, args[3]);
-					p.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id) + "\"§r§a." + ((!lsound.isEmpty()) ? " Last sound : \"" + lsound: ""));
+					sender.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id).toString() + "§a.\"" + ((!lsound.isEmpty()) ? " Last sound : \"" + lsound : ""));
 				}catch (IndexOutOfBoundsException ex){
-					p.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+					sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
 				}
 				break;
 				
@@ -312,10 +306,10 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				try {
 					id = Integer.parseInt(args[2]);
 				}catch (IllegalArgumentException ex){
-					p.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
+					sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
 					return false;
 				}
-				p.sendMessage(ChatColor.GREEN + "Succesfully removed sound \"" + txt.removeSound(id) + "\".");
+				sender.sendMessage(ChatColor.GREEN + "Succesfully removed sound \"" + txt.removeSound(id) + "\".");
 				break;
 				
 			}
@@ -324,25 +318,25 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 		case "name":
 			if (!perm(sender, "name")) return false;
 			if (args.length == 1){
-				p.sendMessage("§aCustom name removed. (old : \"" + txt.setCustomName(null) + "§r§a\")");
+				sender.sendMessage("§aCustom name removed. (old : \"" + txt.setCustomName(null) + "§r§a\")");
 			}else {
 				stb = new StringBuilder();
 				for (int i = 1; i < args.length; i++){
 					stb.append(args[i] + (i == args.length - 1 ? "" : " "));
 				}
-				p.sendMessage("§aCustom name edited. (old : \"" + txt.setCustomName(stb.toString()) + "§r§a\")");
+				sender.sendMessage("§aCustom name edited. (old : \"" + txt.setCustomName(stb.toString()) + "§r§a\")");
 			}
 			break;
 			
 		case "repeat":
 			if (!perm(sender, "repeat")) return false;
-			p.sendMessage("§aRepeat mode is now §o" + (txt.toggleRepeatMode() ? "enabled" : "disabled"));
+			sender.sendMessage("§aRepeat mode is now §o" + (txt.toggleRepeatMode() ? "enabled" : "disabled"));
 			break;
 			
 		case "convert":
 			if (!perm(sender, "convert")) return false;
 			if (!npc.hasTrait(Text.class)){
-				p.sendMessage(ChatColor.RED + "This NPC does not have the Text trait.");
+				sender.sendMessage(ChatColor.RED + "This NPC does not have the Text trait.");
 				return false;
 			}
 			try {
@@ -356,10 +350,10 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				for (String s : ls){
 					txt.addMessage(s);
 				}
-				p.sendMessage(ChatColor.GREEN.toString() + ls.size() + " messages added.");
+				sender.sendMessage(ChatColor.GREEN.toString() + ls.size() + " messages added.");
 				npc.removeTrait(Text.class);
 			}catch (ReflectiveOperationException e) {
-				p.sendMessage("§cError while conversion. Please contact an administrator.");
+				sender.sendMessage("§cError while conversion. Please contact an administrator.");
 				e.printStackTrace();
 			}
 			break;
@@ -367,25 +361,25 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 		case "random":
 			if (!perm(sender, "random")) return false;
 			if (CitizensText.clickDisabled()){
-				p.sendMessage("§cThe \"Cancel click\" option is enabled. Please disable it if you want to enable the random mode.");
+				sender.sendMessage("§cThe \"Cancel click\" option is enabled. Please disable it if you want to enable the random mode.");
 				break;
 			}
-			p.sendMessage("§aRandom mode is now §o" + (txt.toggleRandom() ? "enabled" : "disabled"));
+			sender.sendMessage("§aRandom mode is now §o" + (txt.toggleRandom() ? "enabled" : "disabled"));
 			break;
 			
 		case "delete":
 			if (!perm(sender, "delete")) return false;
 			if (txt.size() > 0){
-				p.sendMessage("§cFor security, please clear all messages before deleting.");
+				sender.sendMessage("§cFor security, please clear all messages before deleting.");
 			}else {
 				txt.delete();
-				p.sendMessage("§aText instance deleted.");
+				sender.sendMessage("§aText instance deleted.");
 			}
 			break;
 			
 		case "?":
 		case "help":
-			p.sendMessage(ChatColor.GREEN + "§m--§r §2§lCitizensText §r§2help §a§m--§r§a\n"
+			sender.sendMessage(ChatColor.GREEN + "§m--§r §2§lCitizensText §r§2help §a§m--§r§a\n"
 					+ " /text add <message> : Add a message (to skip a line use {nl})\n"
 					+ " /text edit <id> <message> : Edit a previously created message\n"
 					+ " /text insert <id> <message> : Insert a message\n"
@@ -408,7 +402,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			break;
 			
 			default:
-				p.sendMessage(ChatColor.RED + "Unknown command. Type §o/text §r§chelp to get some help.");
+				sender.sendMessage(ChatColor.RED + "Unknown command. Type §o/text §r§chelp to get some help.");
 				break;
 		
 		}

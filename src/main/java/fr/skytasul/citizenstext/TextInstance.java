@@ -426,8 +426,13 @@ public class TextInstance implements Listener{
 			p.sendMessage(msg);
 		}
 		
+		@Override
+		public String toString() {
+			return text;
+		}
+		
 		public Object serialize() {
-			if (!player && (command == null) && (sound == null)) return text;
+			if (!player && (command == null) && (sound == null) && delay == -1) return text;
 			Map<String, Object> map = new HashMap<>();
 			map.put("text", text);
 			if (player) map.put("player", true);
