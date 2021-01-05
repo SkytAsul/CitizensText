@@ -43,7 +43,7 @@ public class TextSendEvent extends PlayerEvent implements Cancellable {
 		this.cancelled = cancelled;
 	}
 	
-	private static HandlerList handlers;
+	private static HandlerList handlers = new HandlerList();
 	
 	@Override
 	public HandlerList getHandlers() {
