@@ -32,7 +32,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		for (int i = 0; i < args.length; i++){
-			args[i] = args[i].replaceAll("&", "§");
+			args[i] = CitizensText.translateHexColorCodes("(&|§)#", "", args[i]);
 		}
 		
 		if (args.length == 0){

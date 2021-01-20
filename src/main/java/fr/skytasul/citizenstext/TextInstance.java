@@ -335,10 +335,10 @@ public class TextInstance implements Listener{
 		}).collect(Collectors.toList());
 
 		if (map.containsKey("commands")) ((Map<Integer, String>) map.get("commands")).forEach((id, command) -> {
-			if (ti.messages.size() < id) ti.messages.get(id).command = command;
+			if (ti.messages.size() > id) ti.messages.get(id).command = command;
 		}); // TODO remove (changed in 1.19)
 		if (map.containsKey("sounds")) ((Map<Integer, String>) map.get("sounds")).forEach((id, sound) -> {
-			if (ti.messages.size() < id) ti.messages.get(id).sound = sound;
+			if (ti.messages.size() > id) ti.messages.get(id).sound = sound;
 		}); // TODO remove (changed in 1.19)
 		if (map.containsKey("players")) ti.players = (Map<String, Integer>) map.get("players");
 		if (map.containsKey("times")) ti.times = (Map<String, Long>) map.get("times");

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -169,6 +171,22 @@ public class CitizensText extends JavaPlugin implements Listener{
 	
 	public static CitizensText getInstance(){
 		return instance;
+	}
+	
+	private static final char COLOR_CHAR = '\u00A7';
+	
+	public static String translateHexColorCodes(String startTag, String endTag, String message) {
+		final Pattern hexPattern = Pattern.compile(startTag + "([A-Fa-f0-9]{6})" + endTag);
+		Matcher matcher = hexPattern.matcher(message);
+		StringBuffer buffer = new StringBuffer(message.length() + 4 * 8);
+		while (matcher.find()) {
+			String group = matcher.group(2);
+			matcher.appendReplacement(buffer, COLOR_CHAR + "x"
+					+ COLOR_CHAR + group.charAt(0) + COLOR_CHAR + group.charAt(1)
+					+ COLOR_CHAR + group.charAt(2) + COLOR_CHAR + group.charAt(3)
+					+ COLOR_CHAR + group.charAt(4) + COLOR_CHAR + group.charAt(5));
+		}
+		return matcher.appendTail(buffer).toString();
 	}
 	
 	public static void sendCommand(Player p, String text, String command) {
