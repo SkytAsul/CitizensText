@@ -291,7 +291,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				}
 				try{
 					String lsound = txt.setSound(id, args[3]);
-					sender.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id).toString() + "§a.\"" + ((!lsound.isEmpty()) ? " Last sound : \"" + lsound : ""));
+					sender.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id).toString() + "§a.\"" + (StringUtils.isEmpty(lsound) ? " Last sound : \"" + lsound : ""));
 				}catch (IndexOutOfBoundsException ex){
 					sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
 				}
