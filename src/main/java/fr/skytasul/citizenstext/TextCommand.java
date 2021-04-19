@@ -14,6 +14,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import fr.skytasul.citizenstext.TextInstance.CTCommand;
 import fr.skytasul.citizenstext.TextInstance.Message;
 import net.citizensnpcs.Citizens;
 import net.citizensnpcs.api.CitizensAPI;
@@ -32,7 +33,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		for (int i = 0; i < args.length; i++){
-			args[i] = CitizensText.translateHexColorCodes("(&|§)#", "", args[i]);
+			args[i] = net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', CitizensText.translateHexColorCodes("(&|§)#", "", args[i]));
 		}
 		
 		if (args.length == 0){
@@ -203,7 +204,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 			switch(args[1]){
 			case "add":
 				if (args.length < 4){
-					sender.sendMessage(ChatColor.RED + "You must specify an ID and a command (without /). You can insert {PLAYER} who will be remplaced by the player name.");
+					sender.sendMessage(ChatColor.RED + "You must specify an ID and a command (without /). You can insert {PLAYER} which will be replaced by the player name.");
 					return false;
 				}
 				id = 0;
@@ -220,8 +221,9 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 				String command = stb.toString();
 				command = command.substring(0, command.length() - 1);
 				try{
-					String lcmd = txt.setCommand(id, command);
-					sender.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id) + "\"§r§a." + ((!StringUtils.isEmpty(lcmd)) ? " Old command : \"" + lcmd : ""));
+					Message message = txt.getMessage(id);
+					message.addCommand(command);
+					sender.sendMessage(ChatColor.GREEN + "Successfully added command for message \"" + txt.getMessage(id) + "\"§r§a. New commands: " + message.getCommandsList());
 				}catch (IndexOutOfBoundsException ex){
 					sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
 				}
@@ -239,15 +241,83 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 					sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
 					return false;
 				}
-				sender.sendMessage(ChatColor.GREEN + "Succesfully removed command \"" + txt.removeCommand(id) + "\".");
+				try {
+					sender.sendMessage(ChatColor.GREEN + "Succesfully removed " + txt.getMessage(id).clearCommands() + " commands.");
+				}catch (IndexOutOfBoundsException ex) {
+					sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+				}
 				break;
 				
-			case "auto":
-				sender.sendMessage("§aAuto-dispatchment of commands is now §o" + (txt.toggleAutodispatch() ? "enabled" : "disabled. Please note that clickable messages are not compatible with console dispatchment."));
+			case "auto": // my apologies for this shitty code, will upgrade it later
+				if (args.length < 3) {
+					sender.sendMessage(ChatColor.RED + "You must specify an ID.");
+					return false;
+				}
+				id = 0;
+				try {
+					id = Integer.parseInt(args[2]);
+				}catch (IllegalArgumentException ex) {
+					sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
+					return false;
+				}
+				int cmdid = 0;
+				if (args.length >= 4) {
+					try {
+						cmdid = Integer.parseInt(args[3]);
+					}catch (IllegalArgumentException ex) {
+						sender.sendMessage(ChatColor.RED + "\"" + args[3] + "\" isn't a valid number.");
+						return false;
+					}
+				}
+				
+				try {
+					Message message = txt.getMessage(id);
+					try {
+						CTCommand ctcmd = message.getCommand(cmdid);
+						ctcmd.auto = !ctcmd.auto;
+						sender.sendMessage("§aAuto-dispatchment of commands is now §o" + (ctcmd.auto ? "enabled" : "disabled. Please note that clickable messages are not compatible with console dispatchment."));
+					}catch (IndexOutOfBoundsException ex) {
+						sender.sendMessage(ChatColor.RED + "The command id " + cmdid + " is too big.");
+					}
+				}catch (IndexOutOfBoundsException ex) {
+					sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+				}
 				break;
 				
 			case "console":
-				sender.sendMessage("§aDispatchment by console of commands is now §o" + (txt.toggleConsole() ? "enabled. Please note that this feature is not compatible with clickable messages." : "disabled"));
+				if (args.length < 3) {
+					sender.sendMessage(ChatColor.RED + "You must specify an ID.");
+					return false;
+				}
+				id = 0;
+				try {
+					id = Integer.parseInt(args[2]);
+				}catch (IllegalArgumentException ex) {
+					sender.sendMessage(ChatColor.RED + "\"" + args[2] + "\" isn't a valid number.");
+					return false;
+				}
+				cmdid = 0;
+				if (args.length >= 4) {
+					try {
+						cmdid = Integer.parseInt(args[3]);
+					}catch (IllegalArgumentException ex) {
+						sender.sendMessage(ChatColor.RED + "\"" + args[3] + "\" isn't a valid number.");
+						return false;
+					}
+				}
+				
+				try {
+					Message message = txt.getMessage(id);
+					try {
+						CTCommand ctcmd = message.getCommand(cmdid);
+						ctcmd.console = !ctcmd.console;
+						sender.sendMessage("§aDispatchment by console of commands is now §o" + (ctcmd.console ? "enabled. Please note that this feature is not compatible with clickable messages." : "disabled"));
+					}catch (IndexOutOfBoundsException ex) {
+						sender.sendMessage(ChatColor.RED + "The command id " + cmdid + " is too big.");
+					}
+				}catch (IndexOutOfBoundsException ex) {
+					sender.sendMessage(ChatColor.RED + "The number you have entered (" + id + ") is too big. It must be between 0 and " + txt.size() + ".");
+				}
 				break;
 				
 			default:

@@ -43,8 +43,8 @@ public class TextInstance implements Listener{
 	private List<Message> messages = new ArrayList<>();
 	private boolean random = false;
 	private boolean repeat = true;
-	private boolean autoDispatch = true;
-	private boolean console = false;
+	private boolean autoDispatch = true; // outdated
+	private boolean console = false; // outdated
 	private String customName;
 
 	private NPC npc;
@@ -71,14 +71,6 @@ public class TextInstance implements Listener{
 		messages.add(id, new Message(msg));
 	}
 	
-	public String setCommand(int id, String command){
-		return messages.get(id).setCommand(command);
-	}
-	
-	public String removeCommand(int id){
-		return messages.get(id).setCommand(null);
-	}
-	
 	public String setSound(int id, String sound) {
 		return messages.get(id).setSound(sound);
 	}
@@ -97,14 +89,6 @@ public class TextInstance implements Listener{
 		repeat = !repeat;
 		times.clear();
 		return repeat;
-	}
-	
-	public boolean toggleAutodispatch(){
-		return autoDispatch = !autoDispatch;
-	}
-	
-	public boolean toggleConsole(){
-		return console = !console;
 	}
 	
 	public String getCustomName(){
@@ -147,7 +131,7 @@ public class TextInstance implements Listener{
 		StringJoiner stb = new StringJoiner("\n");
 		for (int i = 0; i < messages.size(); i++) {
 			Message msg = messages.get(i);
-			stb.add(ChatColor.AQUA + "" + i + " : " + ChatColor.GREEN + msg.text);
+			stb.add(ChatColor.AQUA + "" + i + " : " + ChatColor.GREEN + msg.text + (msg.commands.isEmpty() ? "" : ChatColor.GRAY + " (" + msg.commands.size() + " command(s): " + msg.getCommandsList() + ")"));
 		}
 		return stb.toString();
 	}
@@ -158,9 +142,7 @@ public class TextInstance implements Listener{
 	
 	public boolean isEmpty(){
 		if (!messages.isEmpty()) return false;
-		if (autoDispatch) return false;
 		if (random) return false;
-		if (console) return false;
 		if (customName != null) return false;
 		return true;
 	}
@@ -329,13 +311,16 @@ public class TextInstance implements Listener{
 		
 		TextInstance ti = npc == null ? new TextInstance(npcID) : new TextInstance(npc);
 		
+		if (map.containsKey("console")) ti.console = (boolean) map.get("console"); // TODO remove, outdated
+		if (map.containsKey("autoDispatch")) ti.autoDispatch = (boolean) map.get("autoDispatch"); // TODO remove, outdated
+		
 		ti.messages = ((Map<Integer, Object>) map.get("messages")).entrySet().stream().sorted((x, y) -> Integer.compare(x.getKey(), y.getKey())).map(x -> {
 			if (x.getValue() instanceof String) return ti.new Message((String) x.getValue());
 			return ti.new Message((Map<String, Object>) x.getValue());
 		}).collect(Collectors.toList());
 
 		if (map.containsKey("commands")) ((Map<Integer, String>) map.get("commands")).forEach((id, command) -> {
-			if (ti.messages.size() > id) ti.messages.get(id).command = command;
+			if (ti.messages.size() > id) ti.messages.get(id).commands.add(new CTCommand(command, ti.console, ti.autoDispatch));
 		}); // TODO remove (changed in 1.19)
 		if (map.containsKey("sounds")) ((Map<Integer, String>) map.get("sounds")).forEach((id, sound) -> {
 			if (ti.messages.size() > id) ti.messages.get(id).sound = sound;
@@ -344,9 +329,7 @@ public class TextInstance implements Listener{
 		if (map.containsKey("times")) ti.times = (Map<String, Long>) map.get("times");
 		if (map.containsKey("random")) ti.random = (boolean) map.get("random");
 		if (map.containsKey("repeat")) ti.repeat = (boolean) map.get("repeat");
-		if (map.containsKey("autoDispatch")) ti.autoDispatch = (boolean) map.get("autoDispatch");
 		if (map.containsKey("customName")) ti.customName = (String) map.get("customName");
-		if (map.containsKey("console")) ti.console = (boolean) map.get("console");
 
 		if (npc != null){
 			npcs.put(npc, ti);
@@ -356,7 +339,7 @@ public class TextInstance implements Listener{
 	public class Message {
 		private String text;
 		private boolean player = false;
-		private String command;
+		private List<CTCommand> commands = new ArrayList<>();
 		private String sound;
 		private int delay = -1;
 		
@@ -367,7 +350,12 @@ public class TextInstance implements Listener{
 		public Message(Map<String, Object> serializedDatas) {
 			text = (String) serializedDatas.get("text");
 			if (serializedDatas.containsKey("player")) player = (boolean) serializedDatas.get("player");
-			if (serializedDatas.containsKey("command")) command = (String) serializedDatas.get("command");
+			if (serializedDatas.containsKey("command")) {
+				commands.add(new CTCommand((String) serializedDatas.get("command"), console, autoDispatch));
+			}
+			if (serializedDatas.containsKey("commands")) {
+				this.commands = ((List<Object>) serializedDatas.get("commands")).stream().map(CTCommand::deserialize).collect(Collectors.toList());
+			}
 			if (serializedDatas.containsKey("sound")) sound = (String) serializedDatas.get("sound");
 			if (serializedDatas.containsKey("delay")) delay = (int) serializedDatas.get("delay");
 		}
@@ -382,10 +370,22 @@ public class TextInstance implements Listener{
 			return tmp;
 		}
 		
-		public String setCommand(String command) {
-			String tmp = this.command;
-			this.command = command;
-			return tmp;
+		public void addCommand(String command) {
+			commands.add(new CTCommand(command));
+		}
+		
+		public int clearCommands() {
+			int size = commands.size();
+			commands.clear();
+			return size;
+		}
+		
+		public CTCommand getCommand(int id) {
+			return commands.get(id);
+		}
+		
+		public String getCommandsList() {
+			return commands.stream().map(CTCommand::toString).collect(Collectors.joining(", "));
 		}
 		
 		public String setSound(String sound) {
@@ -411,19 +411,13 @@ public class TextInstance implements Listener{
 			if (CitizensText.papi) msg = PlaceholderDepend.format(msg, p);
 			msg = msg.replace("{PLAYER}", p.getName());
 			msg = CitizensText.formatMessage(player, msg, player ? p.getName() : getNPCName(), id + 1, messages.size());
-			if (command != null) {
-				String cmd = command.replace("{PLAYER}", p.getName());
-				if (!autoDispatch && !console) {
-					CitizensText.sendCommand(p, msg, cmd); // clickable msg
-					if (sound != null) p.playSound(p.getLocation(), sound, 1f, 1f);
-					return;
-				}
-				if (!console) {
-					p.performCommand(cmd);
-				}else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-			}// normal message
+			boolean cancelMsg = false;
+			for (Iterator<CTCommand> iterator = commands.iterator(); iterator.hasNext();) {
+				CTCommand cmd = iterator.next();
+				cancelMsg = cmd.execute(p, msg) || cancelMsg;
+			}
+			if (!cancelMsg) p.sendMessage(msg);
 			if (sound != null) p.playSound(p.getLocation(), sound, 1f, 1f);
-			p.sendMessage(msg);
 		}
 		
 		@Override
@@ -432,15 +426,71 @@ public class TextInstance implements Listener{
 		}
 		
 		public Object serialize() {
-			if (!player && (command == null) && (sound == null) && delay == -1) return text;
+			if (!player && (commands.isEmpty()) && (sound == null) && delay == -1) return text;
 			Map<String, Object> map = new HashMap<>();
 			map.put("text", text);
 			if (player) map.put("player", true);
-			if (command != null) map.put("command", command);
+			if (!commands.isEmpty()) map.put("commands", commands.stream().map(CTCommand::serialize).collect(Collectors.toList()));
 			if (sound != null) map.put("sound", sound);
 			if (delay != -1) map.put("delay", delay);
 			return map;
 		}
+	}
+	
+	public static class CTCommand {
+		private String command;
+		public boolean console = false;
+		public boolean auto = true;
+		
+		public CTCommand(String command) {
+			this.command = command;
+		}
+		
+		public CTCommand(String command, boolean console, boolean auto) {
+			this.command = command;
+			this.console = console;
+			this.auto = auto;
+		}
+		
+		public boolean execute(Player p, String msg) {
+			String cmd = command.replace("{PLAYER}", p.getName());
+			if (!auto && !console) {
+				CitizensText.sendCommand(p, msg, cmd); // clickable msg
+				return true;
+			}
+			if (!console) {
+				p.performCommand(cmd);
+			}else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+			return false;
+		}
+		
+		@Override
+		public String toString() {
+			return "/" + command + "(" + (console ? " console" : "player") + ", " + (auto ? "auto" : "clickable") + ")";
+		}
+		
+		public Object serialize() {
+			if (!console && auto) return command;
+			Map<String, Object> map = new HashMap<>();
+			map.put("command", command);
+			if (console) map.put("console", true);
+			if (!auto) map.put("auto", false);
+			return map;
+		}
+		
+		public static CTCommand deserialize(Object serialized) {
+			CTCommand cmd;
+			if (serialized instanceof String) {
+				cmd = new CTCommand((String) serialized);
+			}else {
+				Map<String, Object> map = (Map<String, Object>) serialized;
+				cmd = new CTCommand((String) map.get("command"));
+				if (map.containsKey("console")) cmd.console = (boolean) map.get("console");
+				if (map.containsKey("auto")) cmd.auto = (boolean) map.get("auto");
+			}
+			return cmd;
+		}
+		
 	}
 
 }

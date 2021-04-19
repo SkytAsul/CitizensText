@@ -137,23 +137,25 @@ public class CitizensText extends JavaPlugin implements Listener{
 		List<TextInstance> todo = new ArrayList<>(TextInstance.npcs.values());
 		todo.addAll(TextInstance.dead.values());
 		
-		for (TextInstance ti : todo){
-			if (ti.isEmpty()) getLogger().info("Text instance of NPC " + ti.getNPC().getId() + " is empty - consider removing to free space.");
-			Map<String, Object> map = ti.serialize();
-			if (map != null){
-				ls.add(map);
+		if (data != null) {
+			for (TextInstance ti : todo) {
+				if (ti.isEmpty()) getLogger().info("Text instance of NPC " + ti.getNPC().getId() + " is empty - consider removing to free space.");
+				Map<String, Object> map = ti.serialize();
+				if (map != null) {
+					ls.add(map);
+				}
+			}
+			data.set("data", ls);
+			data.set("lastVersion", getDescription().getVersion());
+			try {
+				data.save(dataFile);
+				getLogger().info(ls.size() + " texts saved");
+				return ls.size();
+			}catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
-		data.set("data", ls);
-		data.set("lastVersion", getDescription().getVersion());
-		try {
-			data.save(dataFile);
-			getLogger().info(ls.size() + " texts saved");
-			return ls.size();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return -666;
+		return -1;
 	}
 	
 	@EventHandler
