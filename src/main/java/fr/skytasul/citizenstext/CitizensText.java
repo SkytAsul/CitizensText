@@ -22,9 +22,9 @@ import net.citizensnpcs.api.event.CitizensPreReloadEvent;
 import net.citizensnpcs.api.event.CitizensReloadEvent;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 
 public class CitizensText extends JavaPlugin implements Listener{
 
@@ -195,7 +195,8 @@ public class CitizensText extends JavaPlugin implements Listener{
 		BaseComponent[] clicks = TextComponent.fromLegacyText(text);
 		for (BaseComponent click : clicks) {
 			click.setClickEvent(new ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/" + command));
-			click.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(clMsg).create()));
+			click.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new Text(clMsg)));
+
 		}
 		p.spigot().sendMessage(clicks);
 	}
