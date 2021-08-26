@@ -13,6 +13,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 
 import fr.skytasul.citizenstext.TextInstance.CTCommand;
 import fr.skytasul.citizenstext.TextInstance.Message;
@@ -331,6 +332,7 @@ public class TextCommand implements CommandExecutor, TabCompleter {
 		case "list":
 			if (!perm(sender, "list")) return false;
 			String list = ChatColor.GREEN + "List of messages for §6" + npc.getName() + " §a:\n§r" + txt.listMessages();
+			if (sender instanceof Player && CitizensText.papi) list = PlaceholderDepend.format(list, (Player) sender);
 			sender.sendMessage(list);
 			break;
 			

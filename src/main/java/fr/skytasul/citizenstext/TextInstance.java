@@ -408,9 +408,9 @@ public class TextInstance implements Listener{
 		
 		public void send(Player p, int id) {
 			String msg = text;
-			if (CitizensText.papi) msg = PlaceholderDepend.format(msg, p);
 			msg = msg.replace("{PLAYER}", p.getName());
 			msg = CitizensText.formatMessage(player, msg, player ? p.getName() : getNPCName(), id + 1, messages.size());
+			if (CitizensText.papi) msg = PlaceholderDepend.format(msg, p);
 			boolean cancelMsg = false;
 			for (Iterator<CTCommand> iterator = commands.iterator(); iterator.hasNext();) {
 				CTCommand cmd = iterator.next();
