@@ -5,8 +5,8 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
 
-import fr.skytasul.citizenstext.TextInstance;
-import fr.skytasul.citizenstext.TextInstance.Message;
+import fr.skytasul.citizenstext.message.Message;
+import fr.skytasul.citizenstext.texts.TextInstance;
 
 public class TextSendEvent extends PlayerEvent implements Cancellable {
 	

@@ -24,7 +24,7 @@ permissions:
       citizenstext.list: true
       citizenstext.cmd: true
       citizenstext.delay: true
-      citizenstext.player: true
+      citizenstext.sender: true
       citizenstext.clear: true
       citizenstext.sound: true
       citizenstext.convert: true
@@ -33,7 +33,6 @@ permissions:
       citizenstext.random: true
       citizenstext.delete: true
       citizenstext.reload: true
-      citizenstext.save: true
   citizenstext.command:
     description: Give access to text command
     default: op
@@ -52,8 +51,8 @@ permissions:
   citizenstext.delay:
     description: Can set the delay of a message
     default: op
-  citizenstext.player:
-    description: Can toggle player-mode
+  citizenstext.sender:
+    description: Can change the sender of a message
     default: op
   citizenstext.cmd:
     description: Can add/remove a command for a message
@@ -84,7 +83,4 @@ permissions:
     default: op
   citizenstext.reload:
     description: Can reload the configuration
-    default: op
-  citizenstext.save:
-    description: Can save the configuration
     default: op

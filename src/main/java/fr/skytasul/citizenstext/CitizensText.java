@@ -1,22 +1,19 @@
 package fr.skytasul.citizenstext;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bstats.bukkit.Metrics;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+
+import fr.skytasul.citizenstext.command.TextCommand;
+import fr.skytasul.citizenstext.options.TextOptionsRegistry;
+import fr.skytasul.citizenstext.players.CTPlayersManager;
+import fr.skytasul.citizenstext.texts.TextsManager;
 
 import net.citizensnpcs.api.event.CitizensPreReloadEvent;
 import net.citizensnpcs.api.event.CitizensReloadEvent;
@@ -27,135 +24,101 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class CitizensText extends JavaPlugin implements Listener{
-
+	
 	private static CitizensText instance;
-	private static String npcFormat, playerFormat;
-	private static String clMsg = "§eClickable Message !";
-	private static int continueAfter;
-	private static int continueDistance;
-	private static int playbackTime;
-	private static int clickMinTime;
-	private static int keepTime;
-	private static boolean disableClick;
-	private static boolean leftClick;
 
-	private static boolean enabled = false;
-	private static boolean disabled = false;
-	private static File dataFile;
-	public static FileConfiguration data;
+	private boolean enabled = false;
+	private boolean disabled = false;
 
-	public static boolean papi;
+	private TextsManager texts;
+	private CTPlayersManager players;
 	
-	public void onLoad(){instance = this;}
+	public boolean papi;
 	
+	private TextCommand command;
+	private TextOptionsRegistry optionsRegistry;
+	
+	@Override
+	public void onLoad() {
+		instance = this;
+	}
+	
+	@Override
 	public void onEnable(){
-		TextCommand cmd = new TextCommand();
-		getCommand("text").setExecutor(cmd);
-		getCommand("text").setTabCompleter(cmd);
+		command = new TextCommand();
+		getCommand("text").setExecutor(command);
+		getCommand("text").setTabCompleter(command);
 		
 		saveDefaultConfig();
 
-		loadConfig();
+		CitizensTextConfiguration.loadConfig(getConfig());
 
+		optionsRegistry = new TextOptionsRegistry();
+		
 		papi = getServer().getPluginManager().isPluginEnabled("PlaceholderAPI");
-		if (papi) getLogger().info("PlaceholderAPI hooked !");
-		loadDatas();
+		if (papi) getLogger().info("Hooked into PlaceholderAPI!");
+		
+		getServer().getScheduler().runTaskLater(this, this::loadDatas, 3L);
 		
 		Metrics metrics = new Metrics(this, 9557);
-		metrics.addCustomChart(new Metrics.SingleLineChart("texts", () -> TextInstance.npcs.size()));
+		metrics.addCustomChart(new Metrics.SingleLineChart("texts", () -> texts.getTexts().size()));
 	}
 	
+	@Override
 	public void onDisable(){
 		if (disabled) return;
 		disable();
-		HandlerList.unregisterAll((JavaPlugin) this);
 		enabled = false;
 	}
 	
-	private void disable(){
-		saveDatas();
-		TextInstance.npcs.clear();
-		TextInstance.dead.clear();
+	public TextOptionsRegistry getOptionsRegistry() {
+		return optionsRegistry;
 	}
 	
-	public void loadDatas(){
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (getServer().getPluginManager().isPluginEnabled("Citizens")){
-					try {
-						dataFile = new File(getDataFolder(), "datas.yml");
-						boolean exists = true;
-						if (!dataFile.exists()){
-							exists = false;
-							dataFile.createNewFile();
-							getLogger().info("Data file (data.yml) created"); 
-						}
-						data = YamlConfiguration.loadConfiguration(dataFile);
-						data.options().header("Do not edit anything here! Everything should be modified in-game.");
-						data.options().copyHeader(true);
-						if (exists){
-							for (Map<?, ?> m : data.getMapList("data")){
-								TextInstance.load((Map<String, Object>) m);
-							}
-							getLogger().info((TextInstance.npcs.size() + TextInstance.dead.size()) + " texts loadeds" + (TextInstance.dead.isEmpty() ? "" : " (including " + TextInstance.dead.size() + " dead ones)"));
-						}
-						if (!enabled) getServer().getPluginManager().registerEvents(instance, instance);
-						enabled = true;
-					} catch (Exception e) {
-						e.printStackTrace();
-						getLogger().severe("An error occurred during data loading. To preserve data integrity, the plugin will now stop.");
-						disabled = true;
-					}
-				}else{
-					getLogger().severe("Citizens has not started properly. CitizensText can not work without it, the plugin will now stop.");
-					disabled = true;
-				}
-				
-				if (disabled) getServer().getPluginManager().disablePlugin(instance);
-			}
-		}.runTaskLater(this, 5L);
+	public CTPlayersManager getPlayers() {
+		return players;
 	}
 	
-	public void loadConfig(){
-		reloadConfig();
-		npcFormat = getConfig().getString("npcTexts");
-		playerFormat = getConfig().getString("playerTexts");
-		clMsg = getConfig().getString("clickableMessage");
-		continueAfter = getConfig().getInt("continueAfter");
-		continueDistance = getConfig().getInt("continueDistance");
-		playbackTime = getConfig().getInt("playbackSeconds");
-		clickMinTime = getConfig().getInt("clickMinTime");
-		keepTime = getConfig().getInt("keepTime");
-		disableClick = getConfig().getBoolean("disableClick");
-		leftClick = getConfig().getBoolean("leftClick");
+	public TextsManager getTexts() {
+		return texts;
 	}
 	
-	public int saveDatas(){
-		List<Map<String, Object>> ls = new ArrayList<>();
-		
-		List<TextInstance> todo = new ArrayList<>(TextInstance.npcs.values());
-		todo.addAll(TextInstance.dead.values());
-		
-		if (data != null) {
-			for (TextInstance ti : todo) {
-				if (ti.isEmpty()) getLogger().info("Text instance of NPC " + ti.getNPC().getId() + " is empty - consider removing to free space.");
-				Map<String, Object> map = ti.serialize();
-				if (map != null) {
-					ls.add(map);
-				}
-			}
-			data.set("data", ls);
-			data.set("lastVersion", getDescription().getVersion());
-			try {
-				data.save(dataFile);
-				getLogger().info(ls.size() + " texts saved");
-				return ls.size();
-			}catch (IOException e) {
-				e.printStackTrace();
-			}
+	public boolean isPAPIEnabled() {
+		return papi;
+	}
+	
+	public void disable() {
+		if (texts != null) {
+			texts.disable();
+			texts = null;
 		}
-		return -1;
+		if (players != null) {
+			players.disable();
+			players = null;
+		}
+	}
+	
+	public void loadDatas() {
+		if (getServer().getPluginManager().isPluginEnabled("Citizens")) {
+			try {
+				texts = new TextsManager(new File(getDataFolder(), "datas.yml"));
+				texts.load(this);
+				
+				players = new CTPlayersManager(this, new File(getDataFolder(), "players.yml"));
+				
+				if (!enabled) getServer().getPluginManager().registerEvents(instance, instance);
+				enabled = true;
+			}catch (Throwable e) {
+				e.printStackTrace();
+				getLogger().severe("An error occurred during data loading. To preserve data integrity, the plugin will now stop.");
+				disabled = true;
+			}
+		}else {
+			getLogger().severe("Citizens has not started properly. CitizensText can not work without it, the plugin will now stop.");
+			disabled = true;
+		}
+		
+		if (disabled) getServer().getPluginManager().disablePlugin(instance);
 	}
 	
 	@EventHandler
@@ -195,51 +158,17 @@ public class CitizensText extends JavaPlugin implements Listener{
 		BaseComponent[] clicks = TextComponent.fromLegacyText(text);
 		for (BaseComponent click : clicks) {
 			click.setClickEvent(new ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/" + command));
-			click.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(clMsg).create()));
+			click.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(CitizensTextConfiguration.getClickableMessage()).create()));
 		}
 		p.spigot().sendMessage(clicks);
 	}
 	
-	public static String formatMessage(boolean player, String msg, String name, int id, int max) {
-		return format(format(format(format(player ? playerFormat : npcFormat, 0, name), 1, msg), 2, "" + id), 3, "" + max).replace("{nl}", "\n");
+	public static String formatMessage(String format, String msg, String name, int id, int size) {
+		return format(format(format(format(format, 0, name), 1, msg), 2, "" + id), 3, "" + size).replace("{nl}", "\n");
 	}
 
 	public static String format(String msg, int i, String replace){
-		String tmp = new String(msg);
-		tmp = tmp.replace("{" + i + "}", replace);
-		return tmp;
-	}
-	
-	public static String getNPCFormat() {
-		return npcFormat;
-	}
-	
-	public static int getTimeToContinue(){
-		return continueAfter;
-	}
-	
-	public static int getDistanceToContinue(){
-		return continueDistance;
-	}
-	
-	public static int getTimeToPlayback() {
-		return playbackTime;
-	}
-	
-	public static int getClickMinimumTime(){
-		return clickMinTime;
-	}
-	
-	public static int getKeepTime() {
-		return keepTime;
-	}
-
-	public static boolean clickDisabled(){
-		return disableClick;
-	}
-	
-	public static boolean isLeftClickNeeded(){
-		return leftClick;
+		return msg.replace("{" + i + "}", replace);
 	}
 	
 }
