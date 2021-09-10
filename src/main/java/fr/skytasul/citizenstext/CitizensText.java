@@ -83,6 +83,10 @@ public class CitizensText extends JavaPlugin implements Listener{
 		return texts;
 	}
 	
+	public TextCommand getCommand() {
+		return command;
+	}
+	
 	public boolean isPAPIEnabled() {
 		return papi;
 	}
