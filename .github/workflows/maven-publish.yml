@@ -66,10 +66,11 @@ jobs:
         uses: actions/download-artifact@v2
 
       - name: Generate changelog
+        id: changelog_step
         uses: heinrichreimer/action-github-changelog-generator@v2.2
 
       - name: Setup variables
-        run: echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)<<EOF" >> $GITHUB_ENV
+        run: echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)" >> $GITHUB_ENV
         shell: sh
 
       - name: Create Release
@@ -79,7 +80,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: CitizensText ${{ env.VERSION }}
-          body: ${{ env.changelog }}
+          body: ${{ steps.changelog_step.outputs.changelog }}
           tag_name: ${{ env.VERSION }}
           draft: true
           prerelease: false
