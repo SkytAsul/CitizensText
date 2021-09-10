@@ -10,7 +10,7 @@
 	<repositories>
 		<repository>
 			<id>placeholderapi</id>
-			<url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+			<url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
 		</repository>
 		<repository>
 			<id>spigotmc-repo</id>
@@ -18,7 +18,7 @@
 		</repository>
 		<repository>
 			<id>citizens</id>
-			<url>http://repo.citizensnpcs.co/</url>
+			<url>https://repo.citizensnpcs.co/</url>
 		</repository>
 		<repository>
 			<id>codemc-repo</id>
