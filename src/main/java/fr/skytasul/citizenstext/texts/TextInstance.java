@@ -21,6 +21,7 @@ import fr.skytasul.citizenstext.event.TextSendEvent;
 import fr.skytasul.citizenstext.message.Message;
 import fr.skytasul.citizenstext.options.OptionMessages;
 import fr.skytasul.citizenstext.options.OptionName;
+import fr.skytasul.citizenstext.options.OptionNear;
 import fr.skytasul.citizenstext.options.OptionRandom;
 import fr.skytasul.citizenstext.options.OptionRepeat;
 import fr.skytasul.citizenstext.options.TextOption;
@@ -144,7 +145,8 @@ public class TextInstance implements Listener{
 	
 	@EventHandler
 	public void onMove(PlayerMoveEvent e){
-		if (!CitizensTextConfiguration.clickDisabled() || isRandom()) return;
+		if (e.getFrom().getBlockX() == e.getTo().getBlockX() && e.getFrom().getBlockY() == e.getTo().getBlockY() && e.getFrom().getBlockZ() == e.getFrom().getBlockZ()) return;
+		if (!getOption(OptionNear.class).getOrDefault() || isRandom()) return;
 		Player p = e.getPlayer();
 		if (!npc.isSpawned() || npc.getEntity().getWorld() != e.getTo().getWorld()) return;
 		CTPlayerText playerText = CTPlayer.getPlayer(p).getText(this);
@@ -174,7 +176,7 @@ public class TextInstance implements Listener{
 	}
 	
 	private void click(NPCClickEvent e){
-		if (CitizensTextConfiguration.clickDisabled()) return;
+		if (getOption(OptionNear.class).getOrDefault()) return;
 		if (e.getNPC() == npc){
 			send(e.getClicker(), CTPlayer.getPlayer(e.getClicker()).getText(this));
 		}
@@ -185,9 +187,8 @@ public class TextInstance implements Listener{
 		if (messages.messagesSize() == 0) return;
 		
 		if (playerText.hasTime()) {
-			if (playerText.getTime() > System.currentTimeMillis()) {
-				return;
-			}else playerText.removeTime();
+			if (playerText.getTime() > System.currentTimeMillis() || (!playerText.canRepeat() && !isRepeat())) return;
+			playerText.removeTime();
 		}
 		if (CitizensTextConfiguration.getClickMinimumTime() > 0) playerText.setTime(System.currentTimeMillis() + CitizensTextConfiguration.getClickMinimumTime() * 1000);
 		
@@ -218,7 +219,11 @@ public class TextInstance implements Listener{
 		id++;
 		if (messages.messagesSize() == id) { // last message
 			playerText.removeMessage();
-			if (CitizensTextConfiguration.getTimeToPlayback() > 0 || !isRepeat()) playerText.setTime(isRepeat() ? System.currentTimeMillis() + CitizensTextConfiguration.getTimeToPlayback() * 1000 : Long.MAX_VALUE);
+			if (!isRepeat()) {
+				playerText.setNoRepeat();
+			}else if (CitizensTextConfiguration.getTimeToPlayback() > 0) {
+				playerText.setTime(System.currentTimeMillis() + CitizensTextConfiguration.getTimeToPlayback() * 1000);
+			}
 			return;
 		}
 		// not last message

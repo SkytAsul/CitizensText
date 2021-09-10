@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.skytasul.citizenstext.CitizensText;
 
@@ -18,6 +20,8 @@ public class CTPlayersManager {
 	
 	private File file;
 	private YamlConfiguration config;
+	
+	private BukkitTask task;
 	
 	public CTPlayersManager(CitizensText plugin, File file) throws IOException {
 		this.file = file;
@@ -47,14 +51,29 @@ public class CTPlayersManager {
 	
 	public void setConfigObject(String key, Object value) {
 		config.set(key, value);
+		if (task == null) {
+			task = Bukkit.getScheduler().runTaskLaterAsynchronously(CitizensText.getInstance(), () -> {
+				task = null;
+				save();
+			}, 15 * 20);
+		}
+	}
+	
+	private void save() {
 		try {
-			config.save(file); // TODO cache not to update too frequently
+			config.save(file);
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void disable() {}
+	public void disable() {
+		if (task != null) {
+			task.cancel();
+			task = null;
+			save();
+		}
+	}
 	
 	public synchronized CTPlayer getPlayer(Player player) {
 		CTPlayer ctPlayer = players.get(player.getUniqueId());

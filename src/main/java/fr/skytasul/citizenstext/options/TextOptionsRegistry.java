@@ -17,6 +17,7 @@ public class TextOptionsRegistry {
 		register(new TextOptionType<>(OptionName.class, OptionName::new, "customName"));
 		register(new TextOptionType<>(OptionRandom.class, OptionRandom::new, "random"));
 		register(new TextOptionType<>(OptionRepeat.class, OptionRepeat::new, "repeat"));
+		register(new TextOptionType<>(OptionNear.class, OptionNear::new, "near"));
 	}
 	
 	public void register(TextOptionType<?> optionType) {

@@ -31,11 +31,12 @@ permissions:
       citizenstext.name: true
       citizenstext.repeat: true
       citizenstext.random: true
+      citizenstext.near: true
       citizenstext.delete: true
       citizenstext.reload: true
   citizenstext.command:
     description: Give access to text command
-    default: op
+    default: true
   citizenstext.add:
     description: Can add a message
     default: op
@@ -50,7 +51,7 @@ permissions:
     default: op
   citizenstext.delay:
     description: Can set the delay of a message
-    default: op
+    default: true
   citizenstext.sender:
     description: Can change the sender of a message
     default: op
@@ -59,7 +60,7 @@ permissions:
     default: op
   citizenstext.clear:
     description: Can clear all messages
-    default: op
+    default: true
   citizenstext.sound:
     description: Can set sounds to messages
     default: op
@@ -74,6 +75,9 @@ permissions:
     default: op
   citizenstext.random:
     description: Can toggle random mode
+    default: op
+  citizenstext.near:
+    description: Can toggle near mode
     default: op
   citizenstext.list:
     description: Can list all messages

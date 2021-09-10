@@ -3,6 +3,7 @@ package fr.skytasul.citizenstext.command;
 import org.bukkit.command.CommandSender;
 
 import fr.skytasul.citizenstext.CitizensTextConfiguration;
+import fr.skytasul.citizenstext.options.OptionNear;
 import fr.skytasul.citizenstext.options.OptionRandom;
 
 public class ArgumentTextRandom extends TextCommandArgument<OptionRandom> {
@@ -18,8 +19,12 @@ public class ArgumentTextRandom extends TextCommandArgument<OptionRandom> {
 	
 	@Override
 	public boolean onCommand(CommandSender sender, String[] args, OptionRandom option) {
-		if (CitizensTextConfiguration.clickDisabled()) {
-			sender.sendMessage("§cThe \"Cancel click\" option is enabled. Please disable it if you want to enable the random mode.");
+		if (option.getTextInstance().getOption(OptionNear.class).getOrDefault()) {
+			if (CitizensTextConfiguration.clickDisabled()) {
+				sender.sendMessage("§cThe \"Cancel click\" config option is enabled. Please disable it if you want to enable the random mode, or use \"/text near\" to disable it for this NPC.");
+			}else {
+				sender.sendMessage("§cThe \"Near\" option is enabled. Please disable it by using \"/text near\" if you want to enable the random mode.");
+			}
 			return false;
 		}
 		sender.sendMessage("§aRandom mode is now §o" + (option.toggle() ? "enabled" : "disabled"));

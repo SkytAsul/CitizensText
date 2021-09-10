@@ -13,7 +13,4 @@ public class OptionRandom extends BooleanOption {
 		return false;
 	}
 	
-	@Override
-	public void setDefaultValue() {}
-	
 }

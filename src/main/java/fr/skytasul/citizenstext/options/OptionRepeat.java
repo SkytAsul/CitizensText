@@ -13,7 +13,4 @@ public class OptionRepeat extends BooleanOption {
 		return true;
 	}
 	
-	@Override
-	public void setDefaultValue() {}
-	
 }

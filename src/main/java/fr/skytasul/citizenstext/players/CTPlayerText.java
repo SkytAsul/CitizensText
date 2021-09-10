@@ -56,6 +56,14 @@ public class CTPlayerText {
 		setTime(0);
 	}
 	
+	public void setNoRepeat() {
+		setTime(-1);
+	}
+	
+	public boolean canRepeat() {
+		return time != -1;
+	}
+	
 	public long getResetTime() {
 		return resetTime;
 	}

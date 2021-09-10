@@ -16,6 +16,9 @@ public abstract class BooleanOption extends TextOption<Boolean> {
 	}
 	
 	@Override
+	public void setDefaultValue() {}
+	
+	@Override
 	protected void saveValue(ConfigurationSection config, String key) {
 		config.set(key, getValue());
 	}

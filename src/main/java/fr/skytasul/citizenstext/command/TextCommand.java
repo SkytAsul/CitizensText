@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -36,6 +38,7 @@ public class TextCommand implements TabExecutor {
 		registerArgument(new ArgumentTextName());
 		registerArgument(new ArgumentTextRepeat());
 		registerArgument(new ArgumentTextRandom());
+		registerArgument(new ArgumentTextNear());
 		registerArgument(new ArgumentMessageList());
 		registerArgument(new ArgumentMessageClear());
 		registerArgument(new ArgumentTextConvert());
@@ -73,18 +76,16 @@ public class TextCommand implements TabExecutor {
 			else
 				sender.sendMessage(ChatColor.RED + "Unknown command. Type §o/text help §r§cto get some help.");
 		}else {
-			if (perm(sender, argument.getCmdPermission())) argument.onCommand(sender, Arrays.copyOfRange(args, 1, args.length));
+			if (perm(sender, argument.getCmdPermission())) {
+				argument.onCommand(sender, Arrays.copyOfRange(args, 1, args.length));
+			}else sender.sendMessage(ChatColor.RED + "Sorry, but you don't have the permission to do this command. §oRequired permission : §lcitizenstext." + argument.getCmdPermission());
 		}
 		
 		return true;
 	}
 	
 	public boolean perm(CommandSender sender, String perm){
-		if (!sender.hasPermission("citizenstext." + perm)){
-			sender.sendMessage(ChatColor.RED + "Sorry, but you don't have the permission to do this command. §oRequired permission : §l" + perm);
-			return false;
-		}
-		return true;
+		return sender.hasPermission("citizenstext." + perm);
 	}
 
 	@Override
@@ -92,10 +93,10 @@ public class TextCommand implements TabExecutor {
 		List<String> tmp = null;
 		Collection<String> find = null;
 		if (args.length == 1){
-			find = argumentsKeyMapping.keySet();
+			find = sender.isOp() ? argumentsKeyMapping.keySet() : argumentsKeyMapping.entrySet().stream().filter(entry -> perm(sender, entry.getValue().getCmdPermission())).map(Entry::getKey).collect(Collectors.toList());
 		}else if (args.length >= 2) {
 			CommandArgument arg = argumentsKeyMapping.get(args[0].toLowerCase());
-			if (arg != null) find = arg.onTabComplete(sender, Arrays.copyOfRange(args, 1, args.length));
+			if (arg != null && perm(sender, arg.getCmdPermission())) find = arg.onTabComplete(sender, Arrays.copyOfRange(args, 1, args.length));
 		}
 		
 		if (find != null) {
