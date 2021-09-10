@@ -10,7 +10,7 @@ The plugin is published on the [SpigotMC website](https://www.spigotmc.org/resou
 You can find documentation on the [GitHub Wiki](https://github.com/SkytAsul/CitizensText/wiki).
 
 ## Developers
-CitizensText is built using maven. It is not published to a public repository yet but it will be eventually.
+CitizensText is built using Apache Maven on GitHub Actions. Artifacts are published against GitHub Packages.
 
 ### Dependency
 ```xml
