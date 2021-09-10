@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-
+    name: Build JAR
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -45,7 +45,8 @@ jobs:
       continue-on-error: true # if already published, do not block
 
     - name: Setup variables
-      run: echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)" >> $GITHUB_ENV
+      id: variables
+      run: ::set-output version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
       shell: sh
     
     # Upload artifacts
@@ -54,7 +55,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: dist
-        path: ./target/citizenstext-${{ env.VERSION }}.jar
+        path: ./target/citizenstext-${{ steps.variables.outputs.version }}.jar
         
   release:
     name: Create Github Release
@@ -79,9 +80,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: CitizensText ${{ env.VERSION }}
+          name: CitizensText ${{ needs.build.steps.variables.outputs.version }}
           body: ${{ steps.changelog_step.outputs.changelog }}
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ needs.build.steps.variables.outputs.version }}
           draft: true
           prerelease: false
-          files: ./dist/citizenstext-${{ env.version }}.jar
+          files: ./dist/citizenstext-${{ needs.build.steps.variables.outputs.version }}.jar
