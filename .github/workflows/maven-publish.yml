@@ -69,7 +69,7 @@ jobs:
         uses: heinrichreimer/action-github-changelog-generator@v2.2
 
       - name: Setup variables
-        run: echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.name} ${project.version}' --non-recursive exec:exec)<<EOF" >> $GITHUB_ENV
+        run: echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)<<EOF" >> $GITHUB_ENV
         shell: sh
 
       - name: Create Release
@@ -78,7 +78,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: ${{ env.VERSION }}
+          name: CitizensText ${{ env.VERSION }}
           body: ${{ env.changelog }}
           tag_name: ${{ env.VERSION }}
           draft: true
