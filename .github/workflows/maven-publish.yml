@@ -38,10 +38,10 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-    #- name: Publish to GitHub Packages Apache Maven
-    #  run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
-    #  env:
-    #    GITHUB_TOKEN: ${{ github.token }}
+    - name: Publish to GitHub Packages Apache Maven
+      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
     
     # Upload artifacts
     - name: Upload Distributable Jar
@@ -61,11 +61,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set Release Variables
-        run: bash ./scripts/set_release_env.sh
-
       - name: Download Artifacts
         uses: actions/download-artifact@v2
+
+      - name: Generate changelog
+        uses: heinrichreimer/action-github-changelog-generator@v2.2
+
+      - name: Setup variables
+        run: echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.name} ${project.version}' --non-recursive exec:exec)<<EOF" >> $GITHUB_ENV
+        shell: sh
 
       - name: Create Release
         id: create-release
@@ -73,8 +77,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: ${{ env.VERSIONED_NAME }}
-          body: ${{ env.GENERATED_CHANGELOG }}
+          name: ${{ env.VERSION }}
+          body: ${{ env.changelog }}
           draft: true
           prerelease: false
           files: ./dist/CitizensText.jar
