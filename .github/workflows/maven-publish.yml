@@ -43,6 +43,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       continue-on-error: true # if already published, do not block
+
+    - name: Setup variables
+      run: echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)" >> $GITHUB_ENV
+      shell: sh
     
     # Upload artifacts
     - name: Upload Distributable Jar
@@ -50,7 +54,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: dist
-        path: ./target/CitizensText.jar
+        path: ./target/citizenstext-${{ env.VERSION }}.jar
         
   release:
     name: Create Github Release
@@ -65,13 +69,9 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v2
 
-      - name: Generate changelog
-        id: changelog_step
-        uses: heinrichreimer/action-github-changelog-generator@v2.2
-
-      - name: Setup variables
-        run: echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)" >> $GITHUB_ENV
-        shell: sh
+      #- name: Generate changelog
+      #  id: changelog_step
+      #  uses: heinrichreimer/action-github-changelog-generator@v2.2
 
       - name: Create Release
         id: create-release
@@ -84,4 +84,4 @@ jobs:
           tag_name: ${{ env.VERSION }}
           draft: true
           prerelease: false
-          files: ./dist/CitizensText.jar
+          files: ./dist/citizenstext-${{ env.version }}.jar
