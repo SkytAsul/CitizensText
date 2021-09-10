@@ -17,6 +17,9 @@ jobs:
       contents: read
       packages: write
 
+    outputs:
+      version: ${{ steps.variables.outputs.version }}
+
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -46,7 +49,7 @@ jobs:
 
     - name: Setup variables
       id: variables
-      run: ::set-output version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+      run: echo "::set-output version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)"
       shell: sh
     
     # Upload artifacts
@@ -80,9 +83,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: CitizensText ${{ needs.build.steps.variables.outputs.version }}
+          name: CitizensText ${{ needs.build.outputs.version }}
           body: ${{ steps.changelog_step.outputs.changelog }}
-          tag_name: ${{ needs.build.steps.variables.outputs.version }}
+          tag_name: ${{ needs.build.outputs.version }}
           draft: true
           prerelease: false
-          files: ./dist/citizenstext-${{ needs.build.steps.variables.outputs.version }}.jar
+          files: ./dist/citizenstext-${{ needs.build.outputs.version }}.jar
