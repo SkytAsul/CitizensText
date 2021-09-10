@@ -79,6 +79,7 @@ jobs:
         with:
           name: ${{ env.VERSION }}
           body: ${{ env.changelog }}
+          tag_name: ${{ env.VERSION }}
           draft: true
           prerelease: false
           files: ./dist/CitizensText.jar
