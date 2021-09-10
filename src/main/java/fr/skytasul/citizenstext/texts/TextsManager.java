@@ -46,7 +46,7 @@ public class TextsManager {
 				plugin.getLogger().warning("WARNING - You will loose all player text datas during migration. (text times, etc.)");
 				
 				for (Map<?, ?> m : data.getMapList("data")) {
-					ConfigurationSection section = data.createSection("texts." + Integer.toString((int) m.get("npc")), m);
+					ConfigurationSection section = data.createSection("texts." + Integer.toString((Integer) m.get("npc")), m);
 					section.set("times", null);
 					section.set("players", null);
 				}
