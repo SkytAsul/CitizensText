@@ -29,10 +29,10 @@ jobs:
         java-version: '8'
         distribution: 'adopt'
         server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
-        server-username: ${{ secrets.OSS_USER }}
-        server-password: ${{ secrets.OSS_PASSWORD }}
-        gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
-        gpg-private-key: ${{ secrets.GPG_PRIVATEKEY }}
+        server-username: OSS_USER
+        server-password: OSS_PASSWORD
+        gpg-passphrase: GPG_PASSPHRASE
+        gpg-private-key: GPG_PRIVATE-KEY
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     # Use cache to speed up build
@@ -47,8 +47,13 @@ jobs:
       run: mvn -B package --file pom.xml
 
     - name: Publish to maven repo
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+      run: mvn deploy #-s $GITHUB_WORKSPACE/settings.xml
       continue-on-error: true # if already published, do not block
+      env:
+        OSS_USER: ${{ secrets.OSS_USER }}
+        OSS_PASSWORD: ${{ secrets.OSS_PASSWORD }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATEKEY }}
 
     - name: Setup variables
       id: variables
