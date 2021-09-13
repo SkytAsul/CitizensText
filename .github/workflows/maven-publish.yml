@@ -32,7 +32,7 @@ jobs:
         server-username: ${{ secrets.OSS_USER }}
         server-password: ${{ secrets.OSS_PASSWORD }}
         gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
-        gpg-privatekey: ${{ secrets.GPG_PRIVATEKEY }}
+        gpg-private-key: ${{ secrets.GPG_PRIVATEKEY }}
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     # Use cache to speed up build
