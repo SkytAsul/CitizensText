@@ -11,6 +11,7 @@ on:
 
 jobs:
   build:
+    environment: deployment
     name: Build JAR
     runs-on: ubuntu-latest
     permissions:
@@ -27,7 +28,11 @@ jobs:
       with:
         java-version: '8'
         distribution: 'adopt'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username: ${{ secrets.OSS_USER }}
+        server-password: ${{ secrets.OSS_PASSWORD }}
+        gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+        gpg-privatekey: ${{ secrets.GPG_PRIVATEKEY }}
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     # Use cache to speed up build
@@ -41,11 +46,8 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-    - name: Publish to GitHub Packages Apache Maven
+    - name: Publish to maven repo
       run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
-      env:
-        GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true # if already published, do not block
 
     - name: Setup variables
