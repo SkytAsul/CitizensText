@@ -53,13 +53,18 @@ public class TextsManager {
 				data.set("data", null);
 				data.set("lastVersion", null);
 			}
-			textsSection = data.getConfigurationSection("texts");
-			for (String key : textsSection.getKeys(false)) {
-				TextInstance.load(textsSection.getConfigurationSection(key));
+			
+			if (data.isConfigurationSection("texts")) {
+				textsSection = data.getConfigurationSection("texts");
+				for (String key : textsSection.getKeys(false)) {
+					TextInstance.load(textsSection.getConfigurationSection(key));
+				}
 			}
 			
 			plugin.getLogger().info(texts.size() + " texts loaded");
 		}
+		
+		if (textsSection == null) textsSection = data.createSection("texts");
 		
 		if (version != DATA_VERSION) {
 			plugin.getLogger().info("Upgrading data version " + version + " to " + DATA_VERSION);
