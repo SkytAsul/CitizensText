@@ -22,6 +22,7 @@ import fr.skytasul.citizenstext.message.Message;
 import fr.skytasul.citizenstext.options.OptionMessages;
 import fr.skytasul.citizenstext.options.OptionName;
 import fr.skytasul.citizenstext.options.OptionNear;
+import fr.skytasul.citizenstext.options.OptionPlaybackTime;
 import fr.skytasul.citizenstext.options.OptionRandom;
 import fr.skytasul.citizenstext.options.OptionRepeat;
 import fr.skytasul.citizenstext.options.TextOption;
@@ -219,13 +220,15 @@ public class TextInstance implements Listener{
 		id++;
 		if (messages.messagesSize() == id) { // last message
 			playerText.removeMessage();
-			if (!isRepeat()) {
+			if (isRepeat()) {
+				int playback = getOption(OptionPlaybackTime.class).getOrDefault();
+				if (playback > 0) playerText.setTime(System.currentTimeMillis() + playback * 1000);
+			}else {
 				playerText.setNoRepeat();
-			}else if (CitizensTextConfiguration.getTimeToPlayback() > 0) {
-				playerText.setTime(System.currentTimeMillis() + CitizensTextConfiguration.getTimeToPlayback() * 1000);
 			}
 			return;
 		}
+		
 		// not last message
 		if (CitizensTextConfiguration.getKeepTime() != -1) playerText.setResetTime(System.currentTimeMillis() + CitizensTextConfiguration.getKeepTime() * 1000);
 		playerText.setMessage(id);

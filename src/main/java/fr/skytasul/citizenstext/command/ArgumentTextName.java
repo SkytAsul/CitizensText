@@ -24,10 +24,10 @@ public class ArgumentTextName extends TextCommandArgument<OptionName> {
 				return false;
 			}
 			option.setValue(null);
-			sender.sendMessage("§aCustom name removed. (old : \"" + oldName + "§r§a\")");
+			sender.sendMessage("§aCustom name removed. (old: \"" + oldName + "§r§a\")");
 		}else {
 			option.setValue(String.join(" ", args));
-			sender.sendMessage("§aCustom name edited. (old : \"" + oldName + "§r§a\")");
+			sender.sendMessage("§aCustom name edited. (old: \"" + oldName + "§r§a\")");
 		}
 		return true;
 	}

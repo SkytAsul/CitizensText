@@ -29,7 +29,7 @@ public abstract class MessageCommandArgument extends TextCommandArgument<OptionM
 		try {
 			id = Integer.parseInt(args[0]);
 		}catch (IllegalArgumentException ex) {
-			sender.sendMessage(ChatColor.RED + "\"" + args[0] + "\" isn't a valid number.");
+			sender.sendMessage(ChatColor.RED + "\"" + args[0] + "\" is not a valid number.");
 			return false;
 		}
 		

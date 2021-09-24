@@ -37,6 +37,7 @@ public class TextCommand implements TabExecutor {
 		registerArgument(new ArgumentMessageSetSound());
 		registerArgument(new ArgumentTextName());
 		registerArgument(new ArgumentTextRepeat());
+		registerArgument(new ArgumentTextPlaybackTime());
 		registerArgument(new ArgumentTextRandom());
 		registerArgument(new ArgumentTextNear());
 		registerArgument(new ArgumentMessageList());
