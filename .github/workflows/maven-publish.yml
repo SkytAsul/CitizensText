@@ -20,6 +20,7 @@ jobs:
 
     outputs:
       version: ${{ steps.variables.outputs.version }}
+      version-unique: ${{ steps.variables.outputs.version }}-${{ steps.variables.outputs.unique }}
 
     steps:
     - uses: actions/checkout@v2
@@ -47,7 +48,7 @@ jobs:
       run: mvn -B package --file pom.xml
 
     - name: Publish to maven repo
-      run: mvn deploy #-s $GITHUB_WORKSPACE/settings.xml
+      run: mvn --batch-mode deploy #-s $GITHUB_WORKSPACE/settings.xml
       continue-on-error: true # if already published, do not block
       env:
         OSS_USER: ${{ secrets.OSS_USER }}
@@ -56,7 +57,9 @@ jobs:
 
     - name: Setup variables
       id: variables
-      run: echo "::set-output name=version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)"
+      run: |
+       echo "::set-output name=version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)"
+       echo "::set-output name=unique::$(date +%s)"
       shell: sh
     
     # Upload artifacts
@@ -90,9 +93,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: CitizensText ${{ needs.build.outputs.version }}
+          name: CitizensText ${{ needs.build.outputs.version-unique }}
           body: ${{ steps.changelog_step.outputs.changelog }}
-          tag_name: ${{ needs.build.outputs.version }}
+          tag_name: ${{ needs.build.outputs.version-unique }}
           draft: true
           prerelease: false
           files: ./dist/citizenstext-${{ needs.build.outputs.version }}.jar
