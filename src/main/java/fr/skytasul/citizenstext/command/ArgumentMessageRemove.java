@@ -34,8 +34,13 @@ public class ArgumentMessageRemove extends TextCommandArgument<OptionMessages> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <id> : Remove a message";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <id>";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Remove a message";
 	}
 	
 }

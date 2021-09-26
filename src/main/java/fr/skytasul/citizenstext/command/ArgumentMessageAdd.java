@@ -29,8 +29,13 @@ public class ArgumentMessageAdd extends TextCommandArgument<OptionMessages> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <message> : Add a message (use {nl} to skip a line)";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <message>";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Add a message (use {nl} to skip a line)";
 	}
 	
 }

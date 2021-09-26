@@ -51,8 +51,8 @@ public class ArgumentTextConvert extends TextCommandArgument<OptionMessages> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " : Add all messages from default NPC Text trait";
+	public String getHelpDescription() {
+		return "Add all messages from default NPC Text trait";
 	}
 	
 }

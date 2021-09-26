@@ -18,8 +18,8 @@ public class ArgumentMessageClear extends TextCommandArgument<OptionMessages> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " : Clear all messages";
+	public String getHelpDescription() {
+		return "Clear all messages";
 	}
 	
 }

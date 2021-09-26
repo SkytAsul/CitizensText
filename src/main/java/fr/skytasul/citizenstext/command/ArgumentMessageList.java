@@ -19,8 +19,8 @@ public class ArgumentMessageList extends TextCommandArgument<OptionMessages> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " : List all messages/IDs";
+	public String getHelpDescription() {
+		return "List all messages/IDs";
 	}
 	
 }

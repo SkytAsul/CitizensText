@@ -21,15 +21,32 @@ public class TextOptionsRegistry {
 		register(new TextOptionType<>(OptionPlaybackTime.class, OptionPlaybackTime::new, "playbackTime"));
 	}
 	
+	/**
+	 * Registers a new option type
+	 * @param optionType informations about the option type
+	 */
 	public void register(TextOptionType<?> optionType) {
 		options.put(optionType.clazz, optionType);
 		configMapping.put(optionType.configKey, optionType);
 	}
 	
+	/**
+	 * Creates a new option for a specific NPC Text
+	 * @param <T> option type
+	 * @param clazz Class of the option type wanted
+	 * @param txt text for which the option will be created
+	 * @return a new option instance associated with the text
+	 */
 	public <T extends TextOption<?>> T createOption(Class<T> clazz, TextInstance txt) {
 		return (T) options.get(clazz).createOption(txt);
 	}
 	
+	/**
+	 * Get option informations for the passed class
+	 * @param <T> option type
+	 * @param clazz Class of the option type wanted
+	 * @return option type informations
+	 */
 	public <T extends TextOption<?>> TextOptionType<T> getOptionType(Class<T> clazz) {
 		return (TextOptionType<T>) options.get(clazz);
 	}

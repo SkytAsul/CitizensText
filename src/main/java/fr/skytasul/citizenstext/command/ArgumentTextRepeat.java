@@ -22,8 +22,8 @@ public class ArgumentTextRepeat extends TextCommandArgument<OptionRepeat> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " : Block the player from talking to the NPC again";
+	public String getHelpDescription() {
+		return "Block the player from talking to the NPC again";
 	}
 	
 }

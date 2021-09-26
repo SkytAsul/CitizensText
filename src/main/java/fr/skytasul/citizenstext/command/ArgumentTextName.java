@@ -33,8 +33,13 @@ public class ArgumentTextName extends TextCommandArgument<OptionName> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <name> : Set the custom name of the NPC";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <name>";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Set the custom name of the NPC";
 	}
 	
 }

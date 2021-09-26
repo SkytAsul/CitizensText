@@ -22,8 +22,8 @@ public class ArgumentTextNear extends TextCommandArgument<OptionNear> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " : Toggle \"talk when nearby\"";
+	public String getHelpDescription() {
+		return "Toggle \"talk when nearby\"";
 	}
 	
 }

@@ -5,11 +5,18 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
+
 public abstract class CommandArgument {
 	
 	private final String cmdPermission;
 	private final String cmdArgument;
 	private final String[] aliases;
+	
+	TextComponent helpComponent;
 	
 	protected CommandArgument(String cmdPermission, String cmdArgument, String... aliases) {
 		this.cmdPermission = cmdPermission;
@@ -34,11 +41,34 @@ public abstract class CommandArgument {
 	}
 	
 	/**
-	 * Returns a help string starting with the command arguments.
-	 * @return a string hepling to understand the command
+	 * Returns a string made of the command syntax and a brief description.
+	 * @return a string helping to understand the command
 	 */
-	public String getHelpString() {
+	public final String getHelpString() {
+		return getHelpSyntax() + "§7:§f " + getHelpDescription();
+	}
+	
+	/**
+	 * Returns the syntax of this command.
+	 * @return syntax
+	 */
+	protected String getHelpSyntax() {
 		return cmdArgument;
+	}
+	
+	/**
+	 * Returns a brief description of the command.
+	 * @return command description
+	 */
+	protected abstract String getHelpDescription();
+	
+	TextComponent getCachedHelpComponent() {
+		if (helpComponent == null) {
+			helpComponent = new TextComponent(" /text " + getHelpString() + "\n");
+			helpComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/text " + getCmdArgument()));
+			helpComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("Click to suggest §a§l/text " + getCmdArgument())));
+		}
+		return helpComponent;
 	}
 	
 	public String getCmdArgument() {

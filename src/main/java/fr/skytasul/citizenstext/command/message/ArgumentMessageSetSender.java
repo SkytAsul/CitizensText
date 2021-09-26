@@ -61,8 +61,13 @@ public class ArgumentMessageSetSender extends MessageCommandArgument {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <sender type> ... : Set the sender of a message";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <sender type> ...";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Set the sender of a message";
 	}
 	
 }

@@ -24,8 +24,8 @@ public class ArgumentReload extends CommandArgument {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " : Reload config and datas";
+	public String getHelpDescription() {
+		return "Reload config and datas";
 	}
 	
 }

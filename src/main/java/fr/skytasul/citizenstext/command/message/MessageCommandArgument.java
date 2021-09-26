@@ -58,8 +58,8 @@ public abstract class MessageCommandArgument extends TextCommandArgument<OptionM
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <msg id>";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <msg id>";
 	}
 	
 }

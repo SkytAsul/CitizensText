@@ -94,8 +94,13 @@ public class ArgumentMessageSetCmd extends MessageCommandArgument {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <" + ARGUMENTS_STRING + "> ... : Manage text commands";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <" + ARGUMENTS_STRING + "> ...";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Manage text commands";
 	}
 	
 }

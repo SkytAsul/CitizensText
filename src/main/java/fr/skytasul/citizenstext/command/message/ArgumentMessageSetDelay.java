@@ -26,8 +26,13 @@ public class ArgumentMessageSetDelay extends MessageCommandArgument {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " [delay] : Set the delay of a message";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " [delay]";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Set the delay of a message";
 	}
 	
 }

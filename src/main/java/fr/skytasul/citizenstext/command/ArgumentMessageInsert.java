@@ -42,8 +42,13 @@ public class ArgumentMessageInsert extends TextCommandArgument<OptionMessages> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <id> <message> : Insert a message";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <id> <message>";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Insert a message";
 	}
 	
 }

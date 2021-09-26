@@ -1,5 +1,9 @@
 package fr.skytasul.citizenstext;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class CitizensTextConfiguration {
@@ -12,7 +16,7 @@ public class CitizensTextConfiguration {
 	private static int clickMinTime;
 	private static int keepTime;
 	private static boolean disableClick;
-	private static boolean leftClick;
+	private static List<ClickType> clicks;
 	
 	public static void loadConfig(FileConfiguration config) {
 		npcFormat = config.getString("npcTexts");
@@ -24,7 +28,25 @@ public class CitizensTextConfiguration {
 		clickMinTime = config.getInt("clickMinTime");
 		keepTime = config.getInt("keepTime");
 		disableClick = config.getBoolean("disableClick");
-		leftClick = config.getBoolean("leftClick");
+		
+		clicks = config.getStringList("clicks").stream().flatMap(x -> {
+			try {
+				ClickType click = ClickType.valueOf(x.toUpperCase());
+				return Stream.of(click);
+			}catch (IllegalArgumentException ex) {
+				CitizensText.getInstance().getLogger().warning("Unknown click type: " + x);
+				return Stream.empty();
+			}
+		}).collect(Collectors.toList());
+		if (clicks.isEmpty()) {
+			CitizensText.getInstance().getLogger().warning("No click specified. Default to RIGHT.");
+			clicks.add(ClickType.RIGHT);
+		}
+		if (config.contains("leftClick")) {
+			CitizensText.getInstance().getLogger().warning("The config option \"leftClick\" is no longer valid. Please remove it and use the new \"clicks\" options.");
+			clicks.clear();
+			clicks.add(config.getBoolean("leftClick") ? ClickType.LEFT : ClickType.RIGHT);
+		}
 	}
 	
 	public static String getNPCFormat() {
@@ -63,8 +85,12 @@ public class CitizensTextConfiguration {
 		return disableClick;
 	}
 	
-	public static boolean isLeftClickNeeded() {
-		return leftClick;
+	public static List<ClickType> getClicks() {
+		return clicks;
+	}
+	
+	public enum ClickType {
+		LEFT, RIGHT;
 	}
 	
 }

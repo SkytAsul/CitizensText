@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 import fr.skytasul.citizenstext.CitizensText;
 import fr.skytasul.citizenstext.CitizensTextConfiguration;
+import fr.skytasul.citizenstext.CitizensTextConfiguration.ClickType;
 import fr.skytasul.citizenstext.event.TextSendEvent;
 import fr.skytasul.citizenstext.message.Message;
 import fr.skytasul.citizenstext.options.OptionMessages;
@@ -168,15 +169,16 @@ public class TextInstance implements Listener{
 	
 	@EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onRightClick(NPCRightClickEvent e){
-		if (!CitizensTextConfiguration.isLeftClickNeeded()) click(e);
+		click(e, ClickType.RIGHT);
 	}
 	
 	@EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onLeftClick(NPCLeftClickEvent e){
-		if (CitizensTextConfiguration.isLeftClickNeeded()) click(e);
+		click(e, ClickType.LEFT);
 	}
 	
-	private void click(NPCClickEvent e){
+	private void click(NPCClickEvent e, ClickType click) {
+		if (!CitizensTextConfiguration.getClicks().contains(click)) return;
 		if (getOption(OptionNear.class).getOrDefault()) return;
 		if (e.getNPC() == npc){
 			send(e.getClicker(), CTPlayer.getPlayer(e.getClicker()).getText(this));

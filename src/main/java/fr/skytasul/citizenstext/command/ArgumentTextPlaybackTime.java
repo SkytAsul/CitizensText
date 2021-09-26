@@ -26,11 +26,11 @@ public class ArgumentTextPlaybackTime extends TextCommandArgument<OptionPlayback
 		Integer oldTime = option.getValue();
 		if (args.length == 0) {
 			if (oldTime == null) {
-				sender.sendMessage("§cNo custom playback time was set. Default value: " + option.getDefault());
+				sender.sendMessage("§cNo custom playback time was set. Default value: " + option.getDefault() + "s");
 				return false;
 			}
 			option.setValue(null);
-			sender.sendMessage("§aCustom playback time removed. (old: \"" + oldTime + "§r§a\")");
+			sender.sendMessage("§aCustom playback time removed. Coming back from old (" + oldTime + "s) to default value (" + option.getDefault() + "s)");
 		}else {
 			try {
 				int time = Integer.parseInt(args[0]);
@@ -39,7 +39,7 @@ public class ArgumentTextPlaybackTime extends TextCommandArgument<OptionPlayback
 					return false;
 				}
 				option.setValue(time);
-				sender.sendMessage("§aCustom playback time set to " + time + " seconds. (old: \"" + oldTime + "§r§a\")");
+				sender.sendMessage("§aCustom playback time set to " + time + " seconds. (old: " + oldTime + "s)");
 			}catch (IllegalArgumentException ex) {
 				sender.sendMessage(ChatColor.RED + "\"" + args[0] + "\" is not a valid number.");
 				return false;
@@ -49,8 +49,13 @@ public class ArgumentTextPlaybackTime extends TextCommandArgument<OptionPlayback
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <time in seconds> : Set the time before players can restart the conversation";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <time in seconds>";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Set the time before players can restart the conversation";
 	}
 	
 }

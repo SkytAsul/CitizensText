@@ -22,8 +22,8 @@ public class ArgumentTextDelete extends TextCommandArgument<OptionMessages> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " : Delete this text instance to free space";
+	public String getHelpDescription() {
+		return "Delete this text instance to free space";
 	}
 	
 }

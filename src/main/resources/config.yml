@@ -5,7 +5,7 @@ npcTexts: "§6[{2}/{3}] §e§l{0} :§r§e {1}"
 playerTexts: "§6[{2}/{3}] §e§l{0} :§r§e {1}"
 
 # Text shown when hovering a clickable message
-clickableMessage : '§eClickable Message !'
+clickableMessage : '§eClick here...'
 
 # Time (in seconds) before the next message will be automatically sent (-1 to disable)
 continueAfter: -1
@@ -26,5 +26,6 @@ playbackSeconds: 5
 # The conversation will automatically start when the player will be in the "continueDistance" radius from the NPC.
 disableClick: false
 
-# Change the action from right to left click
-leftClick: false
+# List of allowed NPC click type to start a conversation
+# Acceptable values: [RIGHT], [LEFT], [RIGHT, LEFT]
+clicks: [RIGHT]

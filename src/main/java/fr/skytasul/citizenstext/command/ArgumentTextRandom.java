@@ -32,8 +32,8 @@ public class ArgumentTextRandom extends TextCommandArgument<OptionRandom> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " : Toggle random mode";
+	public String getHelpDescription() {
+		return "Toggle random mode";
 	}
 	
 }

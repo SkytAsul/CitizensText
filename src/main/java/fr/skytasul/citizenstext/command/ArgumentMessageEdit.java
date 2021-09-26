@@ -50,8 +50,13 @@ public class ArgumentMessageEdit extends TextCommandArgument<OptionMessages> {
 	}
 	
 	@Override
-	public String getHelpString() {
-		return super.getHelpString() + " <id> <message> : Edit a previously created message";
+	public String getHelpSyntax() {
+		return super.getHelpSyntax() + " <id> <message>";
+	}
+	
+	@Override
+	protected String getHelpDescription() {
+		return "Edit a previously created message";
 	}
 	
 }
