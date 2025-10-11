@@ -26,7 +26,7 @@ public class ArgumentMessageSetSound extends MessageCommandArgument {
 		}
 		switch (args[0].toLowerCase()) {
 		case "set":
-			if (args.length == 1) {
+			if (args.length < 2) {
 				sender.sendMessage(ChatColor.RED + "You must specify a sound and optionally pitch, minVolume and maxVolume. Usage: /text sound <msg id> set <sound> [pitch] [minVolume] [maxVolume]");
 				return false;
 			}
