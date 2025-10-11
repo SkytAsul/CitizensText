@@ -1,17 +1,15 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<groupId>io.github.skytasul</groupId>
 	<artifactId>citizenstext</artifactId>
 	<version>2.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-
 	<name>CitizensText</name>
 	<description>A Minecraft Spigot plugins which allows NPCs from Citizens to speak.</description>
 	<url>https://github.com/SkytAsul/CitizensText</url>
-
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<developers>
 		<developer>
 			<name>SkytAsul</name>
@@ -19,13 +17,11 @@
 			<url>https://github.com/SkytAsul</url>
 		</developer>
 	</developers>
-
 	<scm>
 		<connection>scm:git:git://github.com/SkytAsul/CitizensText.git</connection>
 		<developerConnection>scm:git:ssh://github.com:SkytAsul/CitizensText.git</developerConnection>
 		<url>http://github.com/SkytAsul/CitizensText/tree/master</url>
 	</scm>
-
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
@@ -36,7 +32,6 @@
 			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
-
 	<repositories>
 		<repository>
 			<id>placeholderapi</id>
@@ -55,18 +50,17 @@
 			<url>https://repo.codemc.org/repository/maven-public</url>
 		</repository>
 	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>me.clip</groupId>
 			<artifactId>placeholderapi</artifactId>
-			<version>2.10.10</version>
+			<version>2.11.6</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.17.1-R0.1-SNAPSHOT</version>
+			<version>1.16.5-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -78,17 +72,16 @@
 		<dependency>
 			<groupId>net.citizensnpcs</groupId>
 			<artifactId>citizens-main</artifactId>
-			<version>2.0.28-SNAPSHOT</version>
+			<version>2.0.35-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.bstats</groupId>
 			<artifactId>bstats-bukkit</artifactId>
-			<version>1.7</version>
+			<version>1.8</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<resources>
 			<resource>
@@ -99,7 +92,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.14.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -108,7 +101,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version>
+				<version>3.6.1</version>
 				<configuration>
 					<relocations>
 						<relocation>
@@ -128,7 +121,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.3.1</version>
 				<executions>
 					<execution>
 						<id>attach-source</id>
@@ -142,7 +135,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.3.1</version>
+				<version>3.12.0</version>
 				<executions>
 					<execution>
 						<phase>verify</phase>
@@ -156,7 +149,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>3.2.8</version>
 				<executions>
 					<execution>
 						<id>sign-artifacts</id>
