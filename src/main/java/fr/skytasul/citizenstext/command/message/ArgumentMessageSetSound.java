@@ -67,9 +67,6 @@ public class ArgumentMessageSetSound extends MessageCommandArgument {
 			break;
 		case "remove":
 			sender.sendMessage(ChatColor.GREEN + "Successfully removed sound \"" + message.setSound(null) + "\".");
-			message.setPitch(1.0f);
-			message.setMinVolume(1.0f);
-			message.setMaxVolume(1.0f);
 			break;
 		default:
 			sender.sendMessage(ChatColor.RED + "Unknown command. /text sound <msg id> <" + ARGUMENTS_STRING + ">");
