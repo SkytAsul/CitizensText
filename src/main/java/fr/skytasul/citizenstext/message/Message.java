@@ -21,6 +21,9 @@ public class Message {
 	private List<CTCommand> commands = new ArrayList<>();
 	private String sound;
 	private int delay = -1;
+	private float pitch = 1.0f;
+	private float minVolume = 1.0f;
+	private float maxVolume = 1.0f;
 	
 	public Message(String text) {
 		this.text = text;
@@ -42,6 +45,9 @@ public class Message {
 		}
 		if (data.contains("sound")) sound = data.getString("sound");
 		if (data.contains("delay")) delay = data.getInt("delay");
+		if (data.contains("pitch")) pitch = (float) data.getDouble("pitch", 1.0);
+		if (data.contains("minVolume")) minVolume = (float) data.getDouble("minVolume", 1.0);
+		if (data.contains("maxVolume")) maxVolume = (float) data.getDouble("maxVolume", 1.0);
 	}
 	
 	public String getText() {
@@ -93,6 +99,30 @@ public class Message {
 	public void setDelay(int delay) {
 		this.delay = delay;
 	}
+
+	public float getPitch() {
+		return pitch;
+	}
+
+	public void setPitch(float pitch) {
+		this.pitch = pitch;
+	}
+
+	public float getMinVolume() {
+		return minVolume;
+	}
+
+	public void setMinVolume(float minVolume) {
+		this.minVolume = minVolume;
+	}
+
+	public float getMaxVolume() {
+		return maxVolume;
+	}
+
+	public void setMaxVolume(float maxVolume) {
+		this.maxVolume = maxVolume;
+	}
 	
 	public int getDelay() {
 		return delay < 0 ? CitizensTextConfiguration.getTimeToContinue() * 20 : delay;
@@ -119,7 +149,13 @@ public class Message {
 			cancelMsg = cmd.execute(p, msg) || cancelMsg;
 		}
 		if (!cancelMsg) p.sendMessage(msg);
-		if (sound != null) p.playSound(p.getLocation(), sound, 1f, 1f);
+		if (sound != null) {
+			float volume = minVolume;
+			if (maxVolume > minVolume) {
+				volume += (float) (Math.random() * (maxVolume - minVolume));
+			}
+			p.playSound(p.getLocation(), sound, volume, pitch);
+		}
 	}
 	
 	@Override
@@ -128,13 +164,16 @@ public class Message {
 	}
 	
 	public Object serialize() {
-		if (getSender() == TextSender.NPC_SENDER && (commands.isEmpty()) && (sound == null) && delay == -1) return text;
+		if (getSender() == TextSender.NPC_SENDER && (commands.isEmpty()) && (sound == null) && delay == -1 && pitch == 1.0f && minVolume == 1.0f && maxVolume == 1.0f) return text;
 		Map<String, Object> map = new HashMap<>();
 		map.put("text", text);
 		if (getSender() != TextSender.NPC_SENDER) map.put("sender", sender.toString());
 		if (!commands.isEmpty()) map.put("commands", commands.stream().map(CTCommand::serialize).collect(Collectors.toList()));
 		if (sound != null) map.put("sound", sound);
 		if (delay != -1) map.put("delay", delay);
+		if (pitch != 1.0f) map.put("pitch", pitch);
+		if (minVolume != 1.0f) map.put("minVolume", minVolume);
+		if (maxVolume != 1.0f) map.put("maxVolume", maxVolume);
 		return map;
 	}
 }
